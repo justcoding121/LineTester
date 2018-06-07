@@ -50,7 +50,7 @@ namespace Advanced.Algorithms.Geometry
 
             else
             {
-                return X.CompareTo(tgt.Y);
+                return Y.CompareTo(tgt.Y);
             }
         }
     }
@@ -76,7 +76,7 @@ namespace Advanced.Algorithms.Geometry
         {
             var result = new List<Point>();
 
-            var lineLeftRightMap = lineSegments
+            var lineRightLeftMap = lineSegments
                                     .Select(x =>
                                     {
                                         if (x.Start.X < x.End.X)
@@ -94,12 +94,10 @@ namespace Advanced.Algorithms.Geometry
                                              );
                                         }
 
-                                    })
-                                    .ToDictionary(x => x.Key, x => x.Value);
+                                    }).ToDictionary(x => x.Value, x => x.Key);
 
-            var lineRightLeftMap = lineLeftRightMap.ToDictionary(x => x.Value, x => x.Key);
 
-            var eventQueue = new BMinHeap<EventPoint>(lineLeftRightMap.SelectMany(x => new[] { x.Key, x.Value }));
+            var eventQueue = new BMinHeap<EventPoint>(lineRightLeftMap.SelectMany(x => new[] { x.Key, x.Value }));
 
             var currentlyTracked = new BST<EventPointNode>();
 
@@ -109,67 +107,67 @@ namespace Advanced.Algorithms.Geometry
 
                 if (currentEvent.EventType == EventType.LeftEndPoint)
                 {
-                    var currentLineSegment = currentEvent.LineSegment;
+                    var segE = currentEvent.LineSegment;
 
                     var node = insert(currentlyTracked, currentEvent);
 
-                    var above = getClosestUpperEndPoint(node);
-                    var below = getClosestLowerEndPoint(node);
+                    var segA = getClosestUpperEndPoint(node);
+                    var segB = getClosestLowerEndPoint(node);
 
-                    if (above != null && below != null)
+                    if (segA != null && segB != null)
                     {
-                        var lowerUpperIntersection = LineIntersection.FindIntersection(above.LineSegment, below.LineSegment);
+                        var lowerUpperIntersection = LineIntersection.FindIntersection(segA.LineSegment, segB.LineSegment);
                         if (lowerUpperIntersection != null)
                         {
                             eventQueue.Delete(new EventPoint(lowerUpperIntersection));
                         }
                     }
 
-                    if (above != null)
+                    if (segA != null)
                     {
-                        var upperIntersection = LineIntersection.FindIntersection(above.LineSegment, currentLineSegment);
+                        var upperIntersection = LineIntersection.FindIntersection(segA.LineSegment, segE);
                         if (upperIntersection != null)
                         {
                             eventQueue.Insert(new EventPoint(upperIntersection)
                             {
-                                LeftUpLineSegment = getLeftTop(above, currentEvent),
-                                LeftDownLineSegment = getLeftBottom(above, currentEvent)
+                                LeftUpLineSegment = getTop(segA, currentEvent),
+                                LeftDownLineSegment = getBottom(segA, currentEvent)
                             });
                         }
                     }
 
-                    if (below != null)
+                    if (segB != null)
                     {
-                        var lowerIntersection = LineIntersection.FindIntersection(below.LineSegment, currentLineSegment);
+                        var lowerIntersection = LineIntersection.FindIntersection(segB.LineSegment, segE);
                         if (lowerIntersection != null)
                         {
                             eventQueue.Insert(new EventPoint(lowerIntersection)
                             {
-                                LeftUpLineSegment = getLeftTop(below, currentEvent),
-                                LeftDownLineSegment = getLeftBottom(below, currentEvent)
+                                LeftUpLineSegment = getTop(segB, currentEvent),
+                                LeftDownLineSegment = getBottom(segB, currentEvent)
                             });
                         }
                     }
                 }
                 else if (currentEvent.EventType == EventType.RightEndPoint)
                 {
-                    var currentLine = lineRightLeftMap[currentEvent];
-                    var node = currentlyTracked.FindNode(new EventPointNode(currentLine));
+                    var segE = lineRightLeftMap[currentEvent];
+                    var node = currentlyTracked.FindNode(new EventPointNode(segE));
 
-                    var above = getClosestUpperEndPoint(node);
-                    var below = getClosestLowerEndPoint(node);
+                    var segA = getClosestUpperEndPoint(node);
+                    var segB = getClosestLowerEndPoint(node);
 
-                    delete(currentlyTracked, currentLine);
+                    delete(currentlyTracked, segE);
 
-                    if (above != null && below != null)
+                    if (segA != null && segB != null)
                     {
-                        var lowerUpperIntersection = LineIntersection.FindIntersection(above.LineSegment, below.LineSegment);
+                        var lowerUpperIntersection = LineIntersection.FindIntersection(segA.LineSegment, segB.LineSegment);
                         if (lowerUpperIntersection != null)
                         {
                             eventQueue.Insert(new EventPoint(lowerUpperIntersection)
                             {
-                                LeftUpLineSegment = getLeftTop(above, currentLine),
-                                LeftDownLineSegment = getLeftBottom(above, currentLine)
+                                LeftUpLineSegment = getTop(segA, segE),
+                                LeftDownLineSegment = getBottom(segA, segE)
                             });
                         }
                     }
@@ -190,7 +188,7 @@ namespace Advanced.Algorithms.Geometry
                     var segA = getClosestUpperEndPoint(segE2);
                     var segB = getClosestLowerEndPoint(segE1);
 
-                    if (segA != null)
+                    if (segA != null && segE1.Value.EventEndPoint!= segA)
                     {
                         var segE1AItersection = LineIntersection.FindIntersection(segE1.Value.EventEndPoint.LineSegment, segA.LineSegment);
                         if (segE1AItersection != null)
@@ -199,7 +197,7 @@ namespace Advanced.Algorithms.Geometry
                         }
                     }
 
-                    if (segB != null)
+                    if (segB != null && segE2.Value.EventEndPoint!= segB)
                     {
                         var segE2BIntersection = LineIntersection.FindIntersection(segE2.Value.EventEndPoint.LineSegment, segB.LineSegment);
                         if (segE2BIntersection != null)
@@ -208,28 +206,28 @@ namespace Advanced.Algorithms.Geometry
                         }
                     }
 
-                    if (segA != null)
+                    if (segA != null && segE2.Value.EventEndPoint!=segA)
                     {
                         var segE2AIntersection = LineIntersection.FindIntersection(segE2.Value.EventEndPoint.LineSegment, segA.LineSegment);
                         if (segE2AIntersection != null)
                         {
                             eventQueue.Insert(new EventPoint(segE2AIntersection)
                             {
-                                LeftUpLineSegment = getLeftTop(segE2.Value.EventEndPoint, segA),
-                                LeftDownLineSegment = getLeftBottom(segE2.Value.EventEndPoint, segA)
+                                LeftUpLineSegment = getTop(segE2.Value.EventEndPoint, segA),
+                                LeftDownLineSegment = getBottom(segE2.Value.EventEndPoint, segA)
                             });
                         }
                     }
 
-                    if (segB != null)
+                    if (segB != null && (segE1.Value.EventEndPoint!=segB))
                     {
                         var segE1BIntersection = LineIntersection.FindIntersection(segE1.Value.EventEndPoint.LineSegment, segB.LineSegment);
                         if (segE1BIntersection != null)
                         {
                             eventQueue.Insert(new EventPoint(segE1BIntersection)
                             {
-                                LeftUpLineSegment = getLeftTop(segE1.Value.EventEndPoint, segB),
-                                LeftDownLineSegment = getLeftBottom(segE1.Value.EventEndPoint, segB)
+                                LeftUpLineSegment = getTop(segE1.Value.EventEndPoint, segB),
+                                LeftDownLineSegment = getBottom(segE1.Value.EventEndPoint, segB)
                             });
                         }
                     }
@@ -239,23 +237,29 @@ namespace Advanced.Algorithms.Geometry
             return result;
         }
 
-        private static EventPoint getLeftBottom(EventPoint lineSegment, EventPoint currentLineSegment)
+        private static EventPoint getBottom(EventPoint lineSegment, EventPoint currentLineSegment)
         {
             var segments = new[] { lineSegment, currentLineSegment };
 
-            var result = segments.OrderBy(x => Math.Min(x.LineSegment.Start.X, x.LineSegment.End.X))
-                                           .ThenBy(x => Math.Min(x.LineSegment.Start.Y, x.LineSegment.End.Y))
-                                           .First();
+            if(segments.Any(x=>x.EventType != EventType.LeftEndPoint))
+            {
+                throw new Exception();
+            }
+
+            var result = segments.OrderBy(x => x.Y).First();
             return result;
         }
 
-        private static EventPoint getLeftTop(EventPoint lineSegment, EventPoint currentLineSegment)
+        private static EventPoint getTop(EventPoint lineSegment, EventPoint currentLineSegment)
         {
             var segments = new[] { lineSegment, currentLineSegment };
 
-            var result = segments.OrderBy(x => Math.Min(x.LineSegment.Start.X, x.LineSegment.End.X))
-                                           .ThenByDescending(x => Math.Max(x.LineSegment.Start.Y, x.LineSegment.End.Y))
-                                           .First();
+            if (segments.Any(x => x.EventType != EventType.LeftEndPoint))
+            {
+                throw new Exception();
+            }
+
+            var result = segments.OrderByDescending(x => x.Y).First();
             return result;
         }
 

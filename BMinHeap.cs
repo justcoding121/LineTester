@@ -237,12 +237,13 @@ namespace Advanced.Algorithms.DataStructures
         {
             var index = findIndex(value);
 
-            if (index == -1)
+            if (index != -1)
             {
-                throw new Exception("Empty heap");
+                delete(index);
+              //  throw new Exception("Empty heap");
             }
 
-            delete(index);
+           // delete(index);
 
         }
 
