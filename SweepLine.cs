@@ -155,7 +155,6 @@ namespace Advanced.Algorithms.Geometry
                         }
                     }
 
-
                 }
                 //if this is right end point then check for intersection
                 //between closest upper and lower segments.
