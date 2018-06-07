@@ -42,23 +42,32 @@ namespace LineTester
         List<Advanced.Algorithms.Geometry.Point> actualIntersections
             = new List<Advanced.Algorithms.Geometry.Point>();
 
+        private static int nodeCount = 3;
+
         private void generate(bool redo)
         {
             if (!redo)
             {
-                lines = getRandomLines(3);
+                lines = getRandomLines(nodeCount);
                 expectedIntersections.Clear();
                 actualIntersections.Clear();
+
+                while (expectedIntersections.Count == actualIntersections.Count)
+                {
+                    lines = getRandomLines(nodeCount);
+                    expectedIntersections = getExpectedIntersections(lines);
+
+                    actualIntersections = Advanced.Algorithms.Geometry
+                    .SweepLineIntersection.FindIntersections(lines);
+                }
             }
-
-            while (expectedIntersections.Count == actualIntersections.Count)
+            else
             {
-                lines = getRandomLines(3);
-                expectedIntersections = getExpectedIntersections(lines);
-
                 actualIntersections = Advanced.Algorithms.Geometry
                 .SweepLineIntersection.FindIntersections(lines);
+
             }
+
 
             display(lines, expectedIntersections, actualIntersections);
 
@@ -87,6 +96,9 @@ namespace LineTester
                 myLine.VerticalAlignment = VerticalAlignment.Center;
                 myLine.StrokeThickness = 2;
                 canvas.Children.Add(myLine);
+
+                setPoint(canvas, line.Start, true);
+                setPoint(canvas, line.End, true);
             }
 
             expectedIntersections
@@ -105,7 +117,7 @@ namespace LineTester
             myGrid.Children.Add(canvas);
         }
 
-        private void setPoint(Canvas canvas, Advanced.Algorithms.Geometry.Point point, bool actual)
+        private void setPoint(Canvas canvas, Advanced.Algorithms.Geometry.Point point, bool green)
         {
             // Create a red Ellipse.
             Ellipse myEllipse = new Ellipse();
@@ -118,15 +130,15 @@ namespace LineTester
             // Describes the brush's color using RGB values. 
             // Each value has a range of 0-255.
             mySolidColorBrush.Color =
-                actual ? (Color)ColorConverter.ConvertFromString("Green")
+                green ? (Color)ColorConverter.ConvertFromString("Green")
                 : (Color)ColorConverter.ConvertFromString("Red");
 
             myEllipse.Fill = mySolidColorBrush;
             myEllipse.StrokeThickness = 2;
             myEllipse.Stroke = Brushes.Transparent;
 
-            myEllipse.Width = actual ? 10 : 15;
-            myEllipse.Height = actual ? 10 : 15;
+            myEllipse.Width = green ? 10 : 15;
+            myEllipse.Height = green ? 10 : 15;
 
             double left = point.X - (myEllipse.Width / 2);
             double top = point.Y - (myEllipse.Height / 2);
@@ -135,6 +147,13 @@ namespace LineTester
 
             Canvas.SetLeft(myEllipse, left);
             Canvas.SetTop(myEllipse, top);
+
+            TextBlock textBlock = new TextBlock();
+            textBlock.Text = point.ToString(); ;
+            textBlock.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("Black"));
+            Canvas.SetLeft(textBlock, left + 10);
+            Canvas.SetTop(textBlock, top + 10);
+            canvas.Children.Add(textBlock);
         }
 
         private static Random random = new Random();
