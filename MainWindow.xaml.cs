@@ -16,27 +16,19 @@ namespace LineTester
         public MainWindow()
         {
             InitializeComponent();
-            generate(getRandomLines(3));
+            generate(false);
         }
 
-        private static List<Advanced.Algorithms.Geometry.Line> lastLines = null;
+        private static List<Advanced.Algorithms.Geometry.Line> lines = null;
 
         private void redo()
         {
-            if(lastLines == null)
-            {
-                generate(getRandomLines(3));
-            }
-            else
-            {
-                generate(lastLines);
-            }
-           
+            generate(true);
         }
 
         private void Test_Click(object sender, RoutedEventArgs e)
         {
-            generate(getRandomLines(3));
+            generate(false);
         }
 
         private void Redo_Click(object sender, RoutedEventArgs e)
@@ -44,10 +36,20 @@ namespace LineTester
             redo();
         }
 
-        private void generate(List<Advanced.Algorithms.Geometry.Line> lines)
+        List<Advanced.Algorithms.Geometry.Point> expectedIntersections
+            = new List<Advanced.Algorithms.Geometry.Point>();
+
+        List<Advanced.Algorithms.Geometry.Point> actualIntersections
+            = new List<Advanced.Algorithms.Geometry.Point>();
+
+        private void generate(bool redo)
         {
-            List<Advanced.Algorithms.Geometry.Point> expectedIntersections = new List<Advanced.Algorithms.Geometry.Point>();
-            List<Advanced.Algorithms.Geometry.Point> actualIntersections = new List<Advanced.Algorithms.Geometry.Point>();
+            if (!redo)
+            {
+                lines = getRandomLines(3);
+                expectedIntersections.Clear();
+                actualIntersections.Clear();
+            }
 
             while (expectedIntersections.Count == actualIntersections.Count)
             {
@@ -58,7 +60,6 @@ namespace LineTester
                 .SweepLineIntersection.FindIntersections(lines);
             }
 
-            lastLines = lines;
             display(lines, expectedIntersections, actualIntersections);
 
         }
@@ -176,6 +177,6 @@ namespace LineTester
                 new Advanced.Algorithms.Geometry.Point(random.Next(0, 1000) * random.NextDouble(), random.Next(0, 1000) * random.NextDouble()));
         }
 
-       
+
     }
 }

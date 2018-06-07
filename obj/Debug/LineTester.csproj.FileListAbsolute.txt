@@ -13,3 +13,18 @@ C:\Users\Jehonathan\Documents\Visual Studio 2017\Projects\WpfApp1\LineTester\obj
 C:\Users\Jehonathan\Documents\Visual Studio 2017\Projects\WpfApp1\LineTester\obj\Debug\LineTester.csproj.CoreCompileInputs.cache
 C:\Users\Jehonathan\Documents\Visual Studio 2017\Projects\WpfApp1\LineTester\obj\Debug\LineTester.exe
 C:\Users\Jehonathan\Documents\Visual Studio 2017\Projects\WpfApp1\LineTester\obj\Debug\LineTester.pdb
+C:\Work\Repositories\LineTester\LineTester\bin\Debug\LineTester.exe.config
+C:\Work\Repositories\LineTester\LineTester\bin\Debug\LineTester.exe
+C:\Work\Repositories\LineTester\LineTester\bin\Debug\LineTester.pdb
+C:\Work\Repositories\LineTester\LineTester\obj\Debug\LineTester.csprojResolveAssemblyReference.cache
+C:\Work\Repositories\LineTester\LineTester\obj\Debug\MainWindow.g.cs
+C:\Work\Repositories\LineTester\LineTester\obj\Debug\App.g.cs
+C:\Work\Repositories\LineTester\LineTester\obj\Debug\LineTester_MarkupCompile.cache
+C:\Work\Repositories\LineTester\LineTester\obj\Debug\LineTester_MarkupCompile.lref
+C:\Work\Repositories\LineTester\LineTester\obj\Debug\MainWindow.baml
+C:\Work\Repositories\LineTester\LineTester\obj\Debug\LineTester.g.resources
+C:\Work\Repositories\LineTester\LineTester\obj\Debug\LineTester.Properties.Resources.resources
+C:\Work\Repositories\LineTester\LineTester\obj\Debug\LineTester.csproj.GenerateResource.cache
+C:\Work\Repositories\LineTester\LineTester\obj\Debug\LineTester.csproj.CoreCompileInputs.cache
+C:\Work\Repositories\LineTester\LineTester\obj\Debug\LineTester.exe
+C:\Work\Repositories\LineTester\LineTester\obj\Debug\LineTester.pdb
