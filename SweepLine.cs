@@ -100,21 +100,20 @@ namespace Advanced.Algorithms.Geometry
                 //between closest upper and lower segments with current line.
                 if (lineEndPoint.IsLeftEndPoint)
                 {
-                    //left end
+                    //insert
                     var leftNode = insert(currentlyTracked, lineEndPoint);
+                    var rightNode = insert(currentlyTracked, lineLeftRightMap[lineEndPoint]);
 
-                    //get the closest upper line segment
-                    var upperLines = getClosestUpperEndPoints(leftNode, lineEndPoint);
-
-                    //get the closest lower line segment
-                    var lowerLines = getClosestLowerEndPoints(leftNode, lineEndPoint);
+                    //get the closest upper & lower lines
+                    var upperLowerLines = getClosestUpperEndPoints(leftNode, lineEndPoint, new List<Line>(new[] { lineEndPoint.Line }));
+                    upperLowerLines.AddRange(getClosestUpperEndPoints(rightNode, lineLeftRightMap[lineEndPoint], upperLowerLines));
+                    upperLowerLines.AddRange(getClosestLowerEndPoints(leftNode, lineEndPoint, upperLowerLines));
+                    upperLowerLines.AddRange(getClosestLowerEndPoints(rightNode, lineLeftRightMap[lineEndPoint], upperLowerLines));
 
                     //right end
-                    insert(currentlyTracked, lineLeftRightMap[lineEndPoint]);
-
-                    if (upperLines.Count > 0)
+                    if (upperLowerLines.Count > 0)
                     {
-                        foreach (var upperLine in upperLines)
+                        foreach (var upperLine in upperLowerLines)
                         {
                             var upperIntersection = LineIntersection.FindIntersection(upperLine, lineEndPoint.Line);
                             if (upperIntersection != null)
@@ -124,28 +123,12 @@ namespace Advanced.Algorithms.Geometry
                         }
                     }
 
-                    //also verify lower is not the same line as upper.
-                    if (lowerLines.Count > 0)
-                    {
-                        foreach (var lowerLine in lowerLines)
-                        {
-                            if (!upperLines.Any(x => x == lowerLine))
-                            {
-                                var lowerIntersection = LineIntersection.FindIntersection(lineEndPoint.Line, lowerLine);
-                                if (lowerIntersection != null)
-                                {
-                                    result.Add(lowerIntersection);
-                                }
-                            }
-                        }
-                    }
 
                     var linesInBetween = getLinesBetween(currentlyTracked, lineEndPoint, lineLeftRightMap[lineEndPoint]);
 
                     foreach (var line in linesInBetween)
                     {
-                        if (!upperLines.Any(x => x == line)
-                            && !lowerLines.Any(x => x == line))
+                        if (!upperLowerLines.Any(x => x == line))
                         {
                             var intersection = LineIntersection.FindIntersection(lineEndPoint.Line, line);
                             if (intersection != null)
@@ -163,10 +146,11 @@ namespace Advanced.Algorithms.Geometry
                     var rightNode = currentlyTracked.FindNode(new LineEndPointNode(lineEndPoint));
 
                     //get the closest upper line segment
-                    var upperLines = getClosestUpperEndPoints(rightNode, lineEndPoint);
+                    var upperLines = getClosestUpperEndPoints(rightNode, lineEndPoint, new List<Line>());
+
 
                     //get the closest lower line segment
-                    var lowerLines = getClosestLowerEndPoints(rightNode, lineEndPoint);
+                    var lowerLines = getClosestLowerEndPoints(rightNode, lineEndPoint, upperLines);
 
                     //remove left
                     delete(currentlyTracked, lineRightLeftMap[lineEndPoint]);
@@ -266,7 +250,8 @@ namespace Advanced.Algorithms.Geometry
             return currentlyTracked.FindNode(newNode);
         }
 
-        private static List<Line> getClosestLowerEndPoints(BSTNode<LineEndPointNode> node, LineEndPoint currentLine)
+        private static List<Line> getClosestLowerEndPoints(BSTNode<LineEndPointNode> node,
+            LineEndPoint currentLine, List<Line> upper)
         {
             var result = new List<LineEndPoint>();
             result.AddRange(node.Value.EndPoints);
@@ -277,7 +262,7 @@ namespace Advanced.Algorithms.Geometry
             while (nextLower != null)
             {
                 var leftEndPoints = nextLower.Value.EndPoints
-                  .Where(x => x.X <= currentLine.X)
+                  .Where(x => !upper.Any(y => y == x.Line))
                   .ToList();
 
                 if (leftEndPoints.Count == 0)
@@ -321,7 +306,14 @@ namespace Advanced.Algorithms.Geometry
             {
                 if (node.Left != null)
                 {
-                    return node.Left;
+                    node = node.Left;
+
+                    while (node.Right != null)
+                    {
+                        node = node.Right;
+                    }
+
+                    return node;
                 }
                 else
                 {
@@ -331,7 +323,8 @@ namespace Advanced.Algorithms.Geometry
 
         }
 
-        private static List<Line> getClosestUpperEndPoints(BSTNode<LineEndPointNode> node, LineEndPoint currentLine)
+        private static List<Line> getClosestUpperEndPoints(BSTNode<LineEndPointNode> node,
+            LineEndPoint currentLine, List<Line> existing)
         {
             var result = new List<LineEndPoint>();
             result.AddRange(node.Value.EndPoints);
@@ -342,7 +335,7 @@ namespace Advanced.Algorithms.Geometry
             while (nextUpper != null)
             {
                 var leftEndPoints = nextUpper.Value.EndPoints
-                    .Where(x => x.X <= currentLine.X)
+                    .Where(x => !existing.Any(y => y == x.Line))
                     .ToList();
 
                 if (leftEndPoints.Count == 0)
@@ -350,7 +343,7 @@ namespace Advanced.Algorithms.Geometry
                     nextUpper = getNextUpper(nextUpper);
                     continue;
                 }
-             
+
                 result.AddRange(leftEndPoints);
                 break;
             }
@@ -368,7 +361,14 @@ namespace Advanced.Algorithms.Geometry
             {
                 if (node.Right != null)
                 {
-                    return node.Right;
+                    node = node.Right;
+
+                    while (node.Left != null)
+                    {
+                        node = node.Left;
+                    }
+
+                    return node;
                 }
                 else
                 {
