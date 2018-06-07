@@ -6,55 +6,67 @@ using System.Text;
 
 namespace Advanced.Algorithms.Geometry
 {
-    /// <summary>
-    ///     A custom object representing Line end point.
-    /// </summary>
-    internal class LineEndPoint : Point, IComparable
+    //point type
+    internal enum EventType
     {
-        //Is this point the left end point of line.
-        internal bool IsLeftEndPoint;
-        //The full line.
-        internal Line Line;
+        LeftEndPoint = 0,
+        RightEndPoint = 1,
+        IntersectionPoint = 2
+    }
+
+    /// <summary>
+    ///     A custom object representing start/end/intersection point.
+    /// </summary>
+    internal class EventPoint : Point, IComparable
+    {
+        internal EventType EventType;
+
+        //The full line if not an intersection
+        internal Line LineSegment;
+
+        //The two separate lines if an intersection
+        internal EventPoint LeftUpLineSegment;
+        internal EventPoint LeftDownLineSegment;
 
         /// <param name="p">One end point of the line.</param>
-        /// <param name="line">The full line.</param>
+        /// <param name="lineSegment">The full line.</param>
         /// <param name="isLeftEndPoint">Is this point the left end point of line.</param>
-        internal LineEndPoint(Point p, Line line, bool isLeftEndPoint)
+        internal EventPoint(Point p, Line lineSegment = null, EventType eventType = EventType.IntersectionPoint)
             : base(p.X, p.Y)
         {
-            IsLeftEndPoint = isLeftEndPoint;
-            Line = line;
-        }
-
-        public override bool Equals(object obj)
-        {
-            var tgt = obj as LineEndPoint;
-            return this == tgt;
+            EventType = eventType;
+            LineSegment = lineSegment;
         }
 
         public int CompareTo(object obj)
         {
-            return Y.CompareTo((obj as LineEndPoint).Y);
-        }
+            var tgt = obj as EventPoint;
+            var result = X.CompareTo(tgt.X);
 
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
+            if (result != 0)
+            {
+                return result;
+            }
+
+            else
+            {
+                return X.CompareTo(tgt.Y);
+            }
         }
     }
 
-    internal class LineEndPointNode : IComparable
+    internal class EventPointNode : IComparable
     {
-        internal LineEndPointNode(LineEndPoint endPoint)
+        internal EventPointNode(EventPoint eventEndPoint)
         {
-            EndPoints.Add(endPoint);
+            EventEndPoint = eventEndPoint;
         }
 
-        internal List<LineEndPoint> EndPoints { get; set; } = new List<LineEndPoint>();
+        internal EventPoint EventEndPoint { get; set; }
 
         public int CompareTo(object obj)
         {
-            return EndPoints[0].Y.CompareTo((obj as LineEndPointNode).EndPoints[0].Y);
+            return EventEndPoint.Y.CompareTo((obj as EventPointNode).EventEndPoint.Y);
         }
     }
 
@@ -62,234 +74,226 @@ namespace Advanced.Algorithms.Geometry
     {
         public static List<Point> FindIntersections(IEnumerable<Line> lineSegments)
         {
-            var lineLeftRightMap = lineSegments
-                .Select(x =>
-                {
-                    if (x.Start.X < x.End.X)
-                    {
-                        return new KeyValuePair<LineEndPoint, LineEndPoint>(
-                            new LineEndPoint(x.Start, x, true),
-                            new LineEndPoint(x.End, x, false)
-                        );
-                    }
-                    else
-                    {
-                        return new KeyValuePair<LineEndPoint, LineEndPoint>(
-                             new LineEndPoint(x.End, x, true),
-                             new LineEndPoint(x.Start, x, false)
-                         );
-                    }
+            var result = new List<Point>();
 
-                })
-                .ToDictionary(x => x.Key, x => x.Value);
+            var lineLeftRightMap = lineSegments
+                                    .Select(x =>
+                                    {
+                                        if (x.Start.X < x.End.X)
+                                        {
+                                            return new KeyValuePair<EventPoint, EventPoint>(
+                                                new EventPoint(x.Start, x, EventType.LeftEndPoint),
+                                                new EventPoint(x.End, x, EventType.RightEndPoint)
+                                            );
+                                        }
+                                        else
+                                        {
+                                            return new KeyValuePair<EventPoint, EventPoint>(
+                                                 new EventPoint(x.End, x, EventType.LeftEndPoint),
+                                                 new EventPoint(x.Start, x, EventType.RightEndPoint)
+                                             );
+                                        }
+
+                                    })
+                                    .ToDictionary(x => x.Key, x => x.Value);
 
             var lineRightLeftMap = lineLeftRightMap.ToDictionary(x => x.Value, x => x.Key);
 
-            var currentlyTracked = new BST<LineEndPointNode>();
+            var eventQueue = new BMinHeap<EventPoint>(lineLeftRightMap.SelectMany(x => new[] { x.Key, x.Value }));
 
-            var result = new List<Point>();
+            var currentlyTracked = new BST<EventPointNode>();
 
-            //start sweeping from left to right
-            foreach (var lineEndPoint in lineLeftRightMap
-                                        .SelectMany(x => new[] { x.Key, x.Value })
-                                        .OrderBy(x => x.X)
-                                        .ThenByDescending(x => x.IsLeftEndPoint)
-                                        .ThenBy(x => x.Y))
+            while (eventQueue.Count > 0)
             {
-                //if this is left end point then check for intersection
-                //between closest upper and lower segments with current line.
-                if (lineEndPoint.IsLeftEndPoint)
+                var currentEvent = eventQueue.ExtractMin();
+
+                if (currentEvent.EventType == EventType.LeftEndPoint)
                 {
-                    //insert
-                    var leftNode = insert(currentlyTracked, lineEndPoint);
-                    var rightNode = insert(currentlyTracked, lineLeftRightMap[lineEndPoint]);
+                    var currentLineSegment = currentEvent.LineSegment;
 
-                    //get the closest upper & lower lines
-                    var upperLowerLines = getClosestUpperEndPoints(leftNode, lineEndPoint, new List<Line>(new[] { lineEndPoint.Line }));
-                    upperLowerLines.AddRange(getClosestUpperEndPoints(rightNode, lineLeftRightMap[lineEndPoint], upperLowerLines));
-                    upperLowerLines.AddRange(getClosestLowerEndPoints(leftNode, lineEndPoint, upperLowerLines));
-                    upperLowerLines.AddRange(getClosestLowerEndPoints(rightNode, lineLeftRightMap[lineEndPoint], upperLowerLines));
+                    var node = insert(currentlyTracked, currentEvent);
 
-                    //right end
-                    if (upperLowerLines.Count > 0)
+                    var above = getClosestUpperEndPoint(node);
+                    var below = getClosestLowerEndPoint(node);
+
+                    if (above != null && below != null)
                     {
-                        foreach (var upperLine in upperLowerLines)
+                        var lowerUpperIntersection = LineIntersection.FindIntersection(above.LineSegment, below.LineSegment);
+                        if (lowerUpperIntersection != null)
                         {
-                            var upperIntersection = LineIntersection.FindIntersection(upperLine, lineEndPoint.Line);
-                            if (upperIntersection != null)
-                            {
-                                result.Add(upperIntersection);
-                            }
+                            eventQueue.Delete(new EventPoint(lowerUpperIntersection));
                         }
                     }
 
-
-                    var linesInBetween = getLinesBetween(currentlyTracked, lineEndPoint, lineLeftRightMap[lineEndPoint]);
-
-                    foreach (var line in linesInBetween)
+                    if (above != null)
                     {
-                        if (!upperLowerLines.Any(x => x == line))
+                        var upperIntersection = LineIntersection.FindIntersection(above.LineSegment, currentLineSegment);
+                        if (upperIntersection != null)
                         {
-                            var intersection = LineIntersection.FindIntersection(lineEndPoint.Line, line);
-                            if (intersection != null)
+                            eventQueue.Insert(new EventPoint(upperIntersection)
                             {
-                                result.Add(intersection);
-                            }
+                                LeftUpLineSegment = getLeftTop(above, currentEvent),
+                                LeftDownLineSegment = getLeftBottom(above, currentEvent)
+                            });
+                        }
+                    }
+
+                    if (below != null)
+                    {
+                        var lowerIntersection = LineIntersection.FindIntersection(below.LineSegment, currentLineSegment);
+                        if (lowerIntersection != null)
+                        {
+                            eventQueue.Insert(new EventPoint(lowerIntersection)
+                            {
+                                LeftUpLineSegment = getLeftTop(below, currentEvent),
+                                LeftDownLineSegment = getLeftBottom(below, currentEvent)
+                            });
+                        }
+                    }
+                }
+                else if (currentEvent.EventType == EventType.RightEndPoint)
+                {
+                    var currentLine = lineRightLeftMap[currentEvent];
+                    var node = currentlyTracked.FindNode(new EventPointNode(currentLine));
+
+                    var above = getClosestUpperEndPoint(node);
+                    var below = getClosestLowerEndPoint(node);
+
+                    delete(currentlyTracked, currentLine);
+
+                    if (above != null && below != null)
+                    {
+                        var lowerUpperIntersection = LineIntersection.FindIntersection(above.LineSegment, below.LineSegment);
+                        if (lowerUpperIntersection != null)
+                        {
+                            eventQueue.Insert(new EventPoint(lowerUpperIntersection)
+                            {
+                                LeftUpLineSegment = getLeftTop(above, currentLine),
+                                LeftDownLineSegment = getLeftBottom(above, currentLine)
+                            });
                         }
                     }
 
                 }
-                //if this is right end point then check for intersection
-                //between closest upper and lower segments.
                 else
                 {
-                    var rightNode = currentlyTracked.FindNode(new LineEndPointNode(lineEndPoint));
+                    result.Add(currentEvent as Point);
 
-                    //get the closest upper line segment
-                    var upperLines = getClosestUpperEndPoints(rightNode, lineEndPoint, new List<Line>());
+                    var segE1 = currentlyTracked.FindNode(new EventPointNode(currentEvent.LeftUpLineSegment));
+                    var segE2 = currentlyTracked.FindNode(new EventPointNode(currentEvent.LeftDownLineSegment));
 
+                    //swap
+                    var tmp = segE1.Value.EventEndPoint;
+                    segE1.Value.EventEndPoint = segE2.Value.EventEndPoint;
+                    segE2.Value.EventEndPoint = tmp;
 
-                    //get the closest lower line segment
-                    var lowerLines = getClosestLowerEndPoints(rightNode, lineEndPoint, upperLines);
+                    var segA = getClosestUpperEndPoint(segE2);
+                    var segB = getClosestLowerEndPoint(segE1);
 
-                    //remove left
-                    delete(currentlyTracked, lineRightLeftMap[lineEndPoint]);
-
-                    //remove right
-                    delete(currentlyTracked, lineEndPoint);
-
-                    foreach (var upperLine in upperLines)
+                    if (segA != null)
                     {
-                        foreach (var lowerLine in lowerLines)
+                        var segE1AItersection = LineIntersection.FindIntersection(segE1.Value.EventEndPoint.LineSegment, segA.LineSegment);
+                        if (segE1AItersection != null)
                         {
-                            if (upperLine != null && lowerLine != null
-                                && upperLine != lowerLine)
-                            {
-                                var intersection = LineIntersection.FindIntersection(upperLine, lowerLine);
-                                if (intersection != null)
-                                {
-                                    result.Add(intersection);
-                                }
-                            }
+                            eventQueue.Delete(new EventPoint(segE1AItersection));
                         }
                     }
 
+                    if (segB != null)
+                    {
+                        var segE2BIntersection = LineIntersection.FindIntersection(segE2.Value.EventEndPoint.LineSegment, segB.LineSegment);
+                        if (segE2BIntersection != null)
+                        {
+                            eventQueue.Delete(new EventPoint(segE2BIntersection));
+                        }
+                    }
+
+                    if (segA != null)
+                    {
+                        var segE2AIntersection = LineIntersection.FindIntersection(segE2.Value.EventEndPoint.LineSegment, segA.LineSegment);
+                        if (segE2AIntersection != null)
+                        {
+                            eventQueue.Insert(new EventPoint(segE2AIntersection)
+                            {
+                                LeftUpLineSegment = getLeftTop(segE2.Value.EventEndPoint, segA),
+                                LeftDownLineSegment = getLeftBottom(segE2.Value.EventEndPoint, segA)
+                            });
+                        }
+                    }
+
+                    if (segB != null)
+                    {
+                        var segE1BIntersection = LineIntersection.FindIntersection(segE1.Value.EventEndPoint.LineSegment, segB.LineSegment);
+                        if (segE1BIntersection != null)
+                        {
+                            eventQueue.Insert(new EventPoint(segE1BIntersection)
+                            {
+                                LeftUpLineSegment = getLeftTop(segE1.Value.EventEndPoint, segB),
+                                LeftDownLineSegment = getLeftBottom(segE1.Value.EventEndPoint, segB)
+                            });
+                        }
+                    }
                 }
             }
 
-            return result.Distinct().ToList();
+            return result;
         }
 
-        /// <summary>
-        ///     Get the list of lines that is between the given line in currently tracked
-        /// </summary>
-        /// <param name="currentlyTracked"></param>
-        /// <param name="line"></param>
-        /// <returns></returns>
-        private static List<Line> getLinesBetween(BST<LineEndPointNode> currentlyTracked,
-            LineEndPoint left, LineEndPoint right)
+        private static EventPoint getLeftBottom(EventPoint lineSegment, EventPoint currentLineSegment)
         {
-            var lower = left.Y < right.Y ? left : right;
-            var upper = left.Y > right.Y ? left : right;
+            var segments = new[] { lineSegment, currentLineSegment };
 
-            var result = new List<Line>();
-
-            var next = currentlyTracked.FindNode(new LineEndPointNode(lower));
-            var last = currentlyTracked.FindNode(new LineEndPointNode(upper));
-
-            if (next != null)
-            {
-                result.AddRange(next.Value.EndPoints.Select(x => x.Line));
-            }
-
-            if (last != null && last != next)
-            {
-                result.AddRange(last.Value.EndPoints.Select(x => x.Line));
-            }
-
-            if (next != null)
-            {
-                next = getNextUpper(next);
-                while (next != null && next != last)
-                {
-                    result.AddRange(next.Value.EndPoints.Select(x => x.Line));
-                    next = getNextUpper(next);
-                }
-            }
-
-            return result.Where(x => x != left.Line).Distinct().ToList();
+            var result = segments.OrderBy(x => Math.Min(x.LineSegment.Start.X, x.LineSegment.End.X))
+                                           .ThenBy(x => Math.Min(x.LineSegment.Start.Y, x.LineSegment.End.Y))
+                                           .First();
+            return result;
         }
 
-        private static void delete(BST<LineEndPointNode> currentlyTracked, LineEndPoint lineEndPoint)
+        private static EventPoint getLeftTop(EventPoint lineSegment, EventPoint currentLineSegment)
         {
-            var existing = currentlyTracked.FindNode(new LineEndPointNode(lineEndPoint));
+            var segments = new[] { lineSegment, currentLineSegment };
 
-            if (existing.Value.EndPoints.Count > 1)
-            {
-                existing.Value.EndPoints.Remove(lineEndPoint);
-            }
-            else
-            {
-                currentlyTracked.Delete(existing.Value);
-            }
+            var result = segments.OrderBy(x => Math.Min(x.LineSegment.Start.X, x.LineSegment.End.X))
+                                           .ThenByDescending(x => Math.Max(x.LineSegment.Start.Y, x.LineSegment.End.Y))
+                                           .First();
+            return result;
         }
 
-        private static BSTNode<LineEndPointNode> insert(BST<LineEndPointNode> currentlyTracked, LineEndPoint lineEndPoint)
+        private static void delete(BST<EventPointNode> currentlyTracked, EventPoint lineEndPoint)
         {
-            var newNode = new LineEndPointNode(lineEndPoint);
+            var existing = currentlyTracked.FindNode(new EventPointNode(lineEndPoint));
+            currentlyTracked.Delete(existing.Value);
+        }
+
+        private static BSTNode<EventPointNode> insert(BST<EventPointNode> currentlyTracked, EventPoint lineEndPoint)
+        {
+            var newNode = new EventPointNode(lineEndPoint);
             var existing = currentlyTracked.FindNode(newNode);
-
-            if (existing != null)
-            {
-                existing.Value.EndPoints.Add(lineEndPoint);
-                return existing;
-            }
-
             currentlyTracked.Insert(newNode);
 
             return currentlyTracked.FindNode(newNode);
         }
 
-        private static List<Line> getClosestLowerEndPoints(BSTNode<LineEndPointNode> node,
-            LineEndPoint currentLine, List<Line> upper)
+        private static EventPoint getClosestLowerEndPoint(BSTNode<EventPointNode> node)
         {
-            var result = new List<LineEndPoint>();
-            result.AddRange(node.Value.EndPoints);
-
-            var nextLower = getNextLower(node);
-
-            //take only points to the left of current line end point
-            while (nextLower != null)
-            {
-                var leftEndPoints = nextLower.Value.EndPoints
-                  .Where(x => !upper.Any(y => y == x.Line))
-                  .ToList();
-
-                if (leftEndPoints.Count == 0)
-                {
-                    nextLower = getNextLower(nextLower);
-                    continue;
-                }
-
-                result.AddRange(nextLower.Value.EndPoints);
-                break;
-            }
-
-            return result.Where(x => x.Line != currentLine.Line)
-                         .OrderByDescending(x => x.Y)
-                         .Select(x => x.Line)
-                         .Distinct()
-                         .ToList();
+            return getNextLower(node)?.Value.EventEndPoint;
         }
 
-        private static BSTNode<LineEndPointNode> getNextLower(BSTNode<LineEndPointNode> node)
+        private static BSTNode<EventPointNode> getNextLower(BSTNode<EventPointNode> node)
         {
             //root or left child
             if (node.Parent == null || node.IsLeftChild)
             {
                 if (node.Left != null)
                 {
-                    return node.Left;
+                    node = node.Left;
+
+                    while (node.Right != null)
+                    {
+                        node = node.Right;
+                    }
+
+                    return node;
                 }
                 else
                 {
@@ -323,38 +327,12 @@ namespace Advanced.Algorithms.Geometry
 
         }
 
-        private static List<Line> getClosestUpperEndPoints(BSTNode<LineEndPointNode> node,
-            LineEndPoint currentLine, List<Line> existing)
+        private static EventPoint getClosestUpperEndPoint(BSTNode<EventPointNode> node)
         {
-            var result = new List<LineEndPoint>();
-            result.AddRange(node.Value.EndPoints);
-
-            var nextUpper = getNextUpper(node);
-
-            //take only points to the left of current line end point
-            while (nextUpper != null)
-            {
-                var leftEndPoints = nextUpper.Value.EndPoints
-                    .Where(x => !existing.Any(y => y == x.Line))
-                    .ToList();
-
-                if (leftEndPoints.Count == 0)
-                {
-                    nextUpper = getNextUpper(nextUpper);
-                    continue;
-                }
-
-                result.AddRange(leftEndPoints);
-                break;
-            }
-
-            return result.Where(x => x.Line != currentLine.Line)
-                      .OrderBy(x => x.Y)
-                      .Select(x => x.Line)
-                      .ToList();
+            return getNextUpper(node)?.Value.EventEndPoint;
         }
 
-        private static BSTNode<LineEndPointNode> getNextUpper(BSTNode<LineEndPointNode> node)
+        private static BSTNode<EventPointNode> getNextUpper(BSTNode<EventPointNode> node)
         {
             //root or left child
             if (node.Parent == null || node.IsLeftChild)
@@ -380,7 +358,14 @@ namespace Advanced.Algorithms.Geometry
             {
                 if (node.Right != null)
                 {
-                    return node.Right;
+                    node = node.Right;
+
+                    while (node.Left != null)
+                    {
+                        node = node.Left;
+                    }
+
+                    return node;
                 }
                 else
                 {

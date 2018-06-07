@@ -42,7 +42,7 @@ namespace LineTester
         List<Advanced.Algorithms.Geometry.Point> actualIntersections
             = new List<Advanced.Algorithms.Geometry.Point>();
 
-        private static int nodeCount = 3;
+        private static int nodeCount = 5;
 
         private void generate(bool redo)
         {
@@ -175,7 +175,7 @@ namespace LineTester
                 }
             }
 
-            return result;
+            return result.Distinct().ToList();
         }
 
         private static List<Advanced.Algorithms.Geometry.Line> getRandomLines(int lineCount)

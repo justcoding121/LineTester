@@ -53,6 +53,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="BMinHeap.cs" />
     <Compile Include="BST.cs" />
     <Compile Include="Line.cs" />
     <Compile Include="LineIntersection.cs" />

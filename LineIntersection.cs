@@ -24,7 +24,7 @@ namespace Advanced.Algorithms.Geometry
             double x3 = lineB.Start.X, y3 = lineB.Start.Y;
             double x4 = lineB.End.X, y4 = lineB.End.Y;
 
-            var tolerance = Math.Round(Math.Pow(0.1, 3), precision);
+            var tolerance = Math.Round(Math.Pow(0.1, precision), precision);
 
             //equations of the form x=c (two vertical lines)
             if (Math.Abs(x1 - x2) < tolerance && Math.Abs(x3 - x4) < tolerance && Math.Abs(x1 - x3) < tolerance)
