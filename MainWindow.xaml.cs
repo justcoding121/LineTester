@@ -52,8 +52,8 @@ namespace LineTester
                 expectedIntersections.Clear();
                 actualIntersections.Clear();
 
-                //while (expectedIntersections.Count == actualIntersections.Count)
-                //{
+                while (expectedIntersections.Count == actualIntersections.Count)
+                {
                     lines = getRandomLines(nodeCount);
                     expectedIntersections = getExpectedIntersections(lines);
 
@@ -63,7 +63,7 @@ namespace LineTester
                     .SweepLineIntersection.FindIntersections(lines);
                 }
                 catch { }
-                //}
+               }
             }
             else
             {
