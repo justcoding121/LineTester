@@ -192,8 +192,8 @@ namespace Advanced.Algorithms.Geometry
 
                     verifyBST(currentlyTracked);
 
-                    var segA = getClosestUpperEndPoint(segE1);
-                    var segB = getClosestLowerEndPoint(segE2);
+                    var segA = getClosestLowerEndPoint(segE1);
+                    var segB = getClosestUpperEndPoint(segE2);
 
                     if (segA != null && segE2.Value.EventEndPoint != segA)
                     {
@@ -228,8 +228,6 @@ namespace Advanced.Algorithms.Geometry
                             }
                         }
                     }
-
-                 
                 }
 
                 eventQueue.ExtractMin();
