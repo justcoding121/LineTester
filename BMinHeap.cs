@@ -240,11 +240,16 @@ namespace Advanced.Algorithms.DataStructures
             if (index != -1)
             {
                 delete(index);
-              //  throw new Exception("Empty heap");
+                return;
             }
 
-           // delete(index);
+            throw new Exception("Item not found.");
 
+        }
+
+        public bool Exists(T value)
+        {
+            return findIndex(value) != -1;
         }
 
         //TODO optimize search

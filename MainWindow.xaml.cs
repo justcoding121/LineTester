@@ -182,11 +182,17 @@ namespace LineTester
         {
             var lines = new List<Advanced.Algorithms.Geometry.Line>();
 
-            while (lineCount > 0)
-            {
-                lines.Add(getRandomLine());
-                lineCount--;
-            }
+            var s1 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(0, 200), new Advanced.Algorithms.Geometry.Point(100, 300));
+            var s2 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(20, 350), new Advanced.Algorithms.Geometry.Point(110, 150));
+            var s3 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(30, 250), new Advanced.Algorithms.Geometry.Point(80, 120));
+            var s4 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(50, 100), new Advanced.Algorithms.Geometry.Point(120, 300));
+
+            lines.AddRange(new[] { s1, s2, s3, s4 });
+            //while (lineCount > 0)
+            //{
+            //    lines.Add(getRandomLine());
+            //    lineCount--;
+            //}
 
             return lines;
         }
