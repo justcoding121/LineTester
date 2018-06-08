@@ -48,22 +48,32 @@ namespace LineTester
         {
             if (!redo)
             {
-                lines = getRandomLines(nodeCount);
+                lines = new List<Advanced.Algorithms.Geometry.Line>();
                 expectedIntersections.Clear();
                 actualIntersections.Clear();
 
                 while (expectedIntersections.Count == actualIntersections.Count)
                 {
                     lines = getRandomLines(nodeCount);
+
+                    while (lines.Any(x => x.Start.X == x.End.X || x.Start.Y == x.End.Y))
+                    {
+                        lines = getRandomLines(nodeCount);
+                    }
+
                     expectedIntersections = getExpectedIntersections(lines);
 
-                try
-                {
-                    actualIntersections = Advanced.Algorithms.Geometry
-                    .SweepLineIntersection.FindIntersections(lines);
+                    try
+                    {
+                        actualIntersections = Advanced.Algorithms.Geometry
+                        .SweepLineIntersection.FindIntersections(lines);
+                    }
+                    catch
+                    {
+                        break;
+                    }
+
                 }
-                catch { }
-               }
             }
             else
             {

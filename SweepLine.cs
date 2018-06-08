@@ -354,6 +354,17 @@ namespace Advanced.Algorithms.Geometry
                             }
                         }
                     }
+
+                    currentlyTracked.Delete(segUp.Value);
+                    currentlyTracked.Delete(segDown.Value);
+
+                    segUp = insert(currentlyTracked, new EventPointNode(up, lineLeftRightMap[up].Y));
+                    nodeMapping[up] = segUp;
+                    nodeMapping[lineLeftRightMap[up]] = segUp;
+
+                    segDown = insert(currentlyTracked, new EventPointNode(down, lineLeftRightMap[down].Y));
+                    nodeMapping[down] = segDown;
+                    nodeMapping[lineLeftRightMap[down]] = segDown;
                 }
 
                
