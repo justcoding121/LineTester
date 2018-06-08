@@ -319,11 +319,11 @@ namespace Advanced.Algorithms.Geometry
                     verifyBST(currentlyTracked);
 
                     var segUpUp = getClosestUpperEndPoint(segDown);
-                    var segDownDown = getClosestLowerEndPoint(segUp);
+                    var segDownDown = getClosestLowerEndPoint(segDown);
 
-                    if (segUpUp != null && segUp.Value.EventEndPoint != segUpUp)
+                    if (segUpUp != null && segDown.Value.EventEndPoint != segUpUp)
                     {
-                        var segUpIntersection = LineIntersection.FindIntersection(segUp.Value.EventEndPoint.LineSegment, segUpUp.LineSegment);
+                        var segUpIntersection = LineIntersection.FindIntersection(segDown.Value.EventEndPoint.LineSegment, segUpUp.LineSegment);
                         if (segUpIntersection != null)
                         {
                             if (!eventQueue.Exists(new EventPoint(segUpIntersection))
@@ -331,16 +331,16 @@ namespace Advanced.Algorithms.Geometry
                             {
                                 eventQueue.Insert(new EventPoint(segUpIntersection)
                                 {
-                                    LeftUpLineSegment = getTop(segUp.Value.EventEndPoint, segUpUp),
-                                    LeftDownLineSegment = getBottom(segUp.Value.EventEndPoint, segUpUp)
+                                    LeftUpLineSegment = getTop(segDown.Value.EventEndPoint, segUpUp),
+                                    LeftDownLineSegment = getBottom(segDown.Value.EventEndPoint, segUpUp)
                                 });
                             }
                         }
                     }
 
-                    if (segDownDown != null && (segDown.Value.EventEndPoint != segDownDown))
+                    if (segDownDown != null && (segUp.Value.EventEndPoint != segDownDown))
                     {
-                        var segDownIntersection = LineIntersection.FindIntersection(segDown.Value.EventEndPoint.LineSegment, segDownDown.LineSegment);
+                        var segDownIntersection = LineIntersection.FindIntersection(segUp.Value.EventEndPoint.LineSegment, segDownDown.LineSegment);
                         if (segDownIntersection != null)
                         {
                             if (!eventQueue.Exists(new EventPoint(segDownIntersection))
@@ -348,8 +348,8 @@ namespace Advanced.Algorithms.Geometry
                             {
                                 eventQueue.Insert(new EventPoint(segDownIntersection)
                                 {
-                                    LeftUpLineSegment = getTop(segDown.Value.EventEndPoint, segDownDown),
-                                    LeftDownLineSegment = getBottom(segDown.Value.EventEndPoint, segDownDown)
+                                    LeftUpLineSegment = getTop(segUp.Value.EventEndPoint, segDownDown),
+                                    LeftDownLineSegment = getBottom(segUp.Value.EventEndPoint, segDownDown)
                                 });
                             }
                         }
