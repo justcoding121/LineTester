@@ -218,7 +218,7 @@ namespace Advanced.Algorithms.Geometry
 
             while (eventQueue.Count > 0)
             {
-                var currentEvent = eventQueue.PeekMin();
+                var currentEvent = eventQueue.ExtractMin();
 
                 if (currentEvent.EventType == EventType.LeftEndPoint)
                 {
@@ -308,18 +308,18 @@ namespace Advanced.Algorithms.Geometry
 
                     verifyBST(currentlyTracked);
 
-                    segUp = insert(currentlyTracked, new EventPointNode(down, currentEvent.Y));
-                    nodeMapping[down] = segUp;
-                    nodeMapping[lineLeftRightMap[down]] = segUp;
+                    segUp = insert(currentlyTracked, new EventPointNode(up, currentEvent.Y));
+                    nodeMapping[up] = segUp;
+                    nodeMapping[lineLeftRightMap[up]] = segUp;
 
-                    segDown = insert(currentlyTracked, new EventPointNode(up, currentEvent.Y));
-                    nodeMapping[up] = segDown;
-                    nodeMapping[lineLeftRightMap[up]] = segDown;
+                    segDown = insert(currentlyTracked, new EventPointNode(down, currentEvent.Y));
+                    nodeMapping[down] = segDown;
+                    nodeMapping[lineLeftRightMap[down]] = segDown;
 
                     verifyBST(currentlyTracked);
 
-                    var segUpUp = getClosestUpperEndPoint(segUp);
-                    var segDownDown = getClosestLowerEndPoint(segDown);
+                    var segUpUp = getClosestUpperEndPoint(segDown);
+                    var segDownDown = getClosestLowerEndPoint(segUp);
 
                     if (segUpUp != null && segUp.Value.EventEndPoint != segUpUp)
                     {
@@ -356,7 +356,7 @@ namespace Advanced.Algorithms.Geometry
                     }
                 }
 
-                eventQueue.ExtractMin();
+               
             }
 
             return result.ToList();
