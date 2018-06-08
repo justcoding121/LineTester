@@ -319,7 +319,7 @@ namespace Advanced.Algorithms.Geometry
                     verifyBST(currentlyTracked);
 
                     var segUpUp = getClosestUpperEndPoint(segDown);
-                    var segDownDown = getClosestLowerEndPoint(segDown);
+                    var segDownDown = getClosestLowerEndPoint(segUp);
 
                     if (segUpUp != null && segDown.Value.EventEndPoint != segUpUp)
                     {
