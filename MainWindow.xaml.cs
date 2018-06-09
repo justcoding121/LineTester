@@ -42,7 +42,7 @@ namespace LineTester
         List<Advanced.Algorithms.Geometry.Point> actualIntersections
             = new List<Advanced.Algorithms.Geometry.Point>();
 
-        private static int nodeCount = 3;
+        private static int nodeCount = 5;
 
         private void generate(bool redo)
         {
@@ -206,6 +206,7 @@ namespace LineTester
             //var s4 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(50, 100), new Advanced.Algorithms.Geometry.Point(120, 300));
 
             //lines.AddRange(new[] { s1, s2, s3, s4 });
+
             while (lineCount > 0)
             {
                 lines.Add(getRandomLine());
