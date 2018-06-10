@@ -10,17 +10,28 @@
         public double X { get; set; }
         public double Y { get; set; }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object that)
         {
-            var tgt = obj as Point;
-            return (tgt.X == X) && (tgt.Y == Y);
+            // Check for null values and compare run-time types.
+            if (that == null || GetType() != that.GetType())
+            {
+                return false;
+            }
+
+            if (that == this)
+            {
+                return true;
+            }
+
+            var thatPoint = that as Point;
+            return (thatPoint.X == X) && (thatPoint.Y == Y);
         }
 
         public override int GetHashCode()
         {
-            var hashCode = 1861411795;
-            hashCode = hashCode * -1521134295 + X.GetHashCode();
-            hashCode = hashCode * -1521134295 + Y.GetHashCode();
+            var hashCode = 33;
+            hashCode = hashCode * -21 + X.GetHashCode();
+            hashCode = hashCode * -21 + Y.GetHashCode();
             return hashCode;
         }
 

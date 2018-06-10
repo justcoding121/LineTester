@@ -72,23 +72,6 @@ namespace Advanced.Algorithms.DataStructures
             return Math.Max(getHeight(node.Left), getHeight(node.Right)) + 1;
         }
 
-
-        internal BSTNode<T> InsertAndReturnNewNode(T value)
-        {
-            if (Root == null)
-            {
-                Root = new BSTNode<T>(null, value);
-                Count++;
-                return Root;
-            }
-
-            var newNode = insert(Root, value);
-            Count++;
-
-            return newNode;
-        }
-
-
         //worst O(n) for unbalanced tree
         public void Insert(T value)
         {
@@ -146,33 +129,24 @@ namespace Advanced.Algorithms.DataStructures
 
         //remove the node with the given identifier from the descendants 
         //worst O(n) for unbalanced tree
-        public void Delete(T value)
+        public bool Delete(T value)
         {
             if (Root == null)
             {
                 throw new Exception("Empty BST");
             }
 
-            delete(Root, value);
-            Count--;
-        }
-
-        internal BSTNode<T> DeleteAndReturnParent(T value)
-        {
-            if (Root == null)
+            var deleted = delete(Root, value);
+            if (deleted)
             {
-                throw new Exception("Empty BST");
+                Count--;
             }
 
-            var parentNode = delete(Root, value);
-
-            Count--;
-
-            return parentNode;
+            return deleted;
         }
 
         //worst O(n) for unbalanced tree
-        private BSTNode<T> delete(BSTNode<T> node, T value)
+        private bool delete(BSTNode<T> node, T value)
         {
             while (true)
             {
@@ -183,14 +157,23 @@ namespace Advanced.Algorithms.DataStructures
                     //node is less than the search value so move right to find the deletion node
                     if (compareResult < 0)
                     {
-                        node = node.Right ?? throw new Exception("Item do not exist");
+                        node = node.Right;
+                        if (node == null)
+                        {
+                            throw new Exception("Item do not exist");
+                        }
+
                         continue;
                     }
                     //node is less than the search value so move left to find the deletion node
 
                     if (compareResult > 0)
                     {
-                        node = node.Left ?? throw new Exception("Item do not exist");
+                        node = node.Left;
+                        if (node == null)
+                        {
+                            throw new Exception("Item do not exist");
+                        }
                         continue;
                     }
                 }
@@ -199,21 +182,21 @@ namespace Advanced.Algorithms.DataStructures
                 if (node != null && node.IsLeaf)
                 {
                     deleteLeaf(node);
-                    return node.Parent;
+                    return true;
                 }
 
                 //case one - right tree is null (move sub tree up)
                 if (node?.Left != null && node.Right == null)
                 {
                     deleteLeftNode(node);
-                    return node.Parent;
+                    return true;
                 }
                 //case two - left tree is null  (move sub tree up)
 
                 if (node?.Right != null && node.Left == null)
                 {
                     deleteRightNode(node);
-                    return node.Parent;
+                    return true;
                 }
                 //case three - two child trees 
                 //replace the node value with maximum element of left subtree (left max node)
@@ -366,6 +349,133 @@ namespace Advanced.Algorithms.DataStructures
                 }
 
                 parent = parent.Right;
+            }
+        }
+
+        /// <summary>
+        ///     Get the value previous to given value in this BST.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public T Previous(T value)
+        {
+            var node = FindNode(value);
+            if (node == null)
+            {
+                throw new Exception("Given value is not found in this BST.");
+            }
+
+            return nextLower(node).Value;
+        }
+
+        private static BSTNode<T> nextLower(BSTNode<T> node)
+        {
+            //root or left child
+            if (node.Parent == null || node.IsLeftChild)
+            {
+                if (node.Left != null)
+                {
+                    node = node.Left;
+
+                    while (node.Right != null)
+                    {
+                        node = node.Right;
+                    }
+
+                    return node;
+                }
+                else
+                {
+                    while (node.Parent != null && node.IsLeftChild)
+                    {
+                        node = node.Parent;
+                    }
+
+                    return node?.Parent;
+                }
+            }
+            //right child
+            else
+            {
+                if (node.Left != null)
+                {
+                    node = node.Left;
+
+                    while (node.Right != null)
+                    {
+                        node = node.Right;
+                    }
+
+                    return node;
+                }
+                else
+                {
+                    return node.Parent;
+                }
+            }
+
+        }
+
+        /// <summary>
+        ///     Get the value next to given value in this BST.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public T Next(T value)
+        {
+            var node = FindNode(value);
+            if (node == null)
+            {
+                throw new Exception("Given value is not found in this BST.");
+            }
+
+            return nextUpper(node).Value;
+        }
+
+        private BSTNode<T> nextUpper(BSTNode<T> node)
+        {
+            //root or left child
+            if (node.Parent == null || node.IsLeftChild)
+            {
+                if (node.Right != null)
+                {
+                    node = node.Right;
+
+                    while (node.Left != null)
+                    {
+                        node = node.Left;
+                    }
+
+                    return node;
+                }
+                else
+                {
+                    return node?.Parent;
+                }
+            }
+            //right child
+            else
+            {
+                if (node.Right != null)
+                {
+                    node = node.Right;
+
+                    while (node.Left != null)
+                    {
+                        node = node.Left;
+                    }
+
+                    return node;
+                }
+                else
+                {
+                    while (node.Parent != null && node.IsRightChild)
+                    {
+                        node = node.Parent;
+                    }
+
+                    return node?.Parent;
+                }
             }
         }
     }

@@ -42,7 +42,7 @@ namespace LineTester
         List<Advanced.Algorithms.Geometry.Point> actualIntersections
             = new List<Advanced.Algorithms.Geometry.Point>();
 
-        private static int nodeCount = 5;
+        private static int nodeCount = 10;
 
         private void generate(bool redo)
         {
@@ -56,7 +56,7 @@ namespace LineTester
                 {
                     lines = getRandomLines(nodeCount);
 
-                    while (lines.Any(x => x.Start.X == x.End.X || x.Start.Y == x.End.Y))
+                    while (lines.Any(x => x.Left.X == x.Right.X || x.Left.Y == x.Right.Y))
                     {
                         lines = getRandomLines(nodeCount);
                     }
@@ -105,18 +105,18 @@ namespace LineTester
                 var myLine = new Line();
                 myLine.Stroke = System.Windows.Media.Brushes.LightSteelBlue;
 
-                myLine.X1 = line.Start.X;
-                myLine.X2 = line.End.X;
-                myLine.Y1 = line.Start.Y;
-                myLine.Y2 = line.End.Y;
+                myLine.X1 = line.Left.X;
+                myLine.X2 = line.Right.X;
+                myLine.Y1 = line.Left.Y;
+                myLine.Y2 = line.Right.Y;
 
                 myLine.HorizontalAlignment = HorizontalAlignment.Left;
                 myLine.VerticalAlignment = VerticalAlignment.Center;
                 myLine.StrokeThickness = 2;
                 canvas.Children.Add(myLine);
 
-                setPoint(canvas, line.Start, true);
-                setPoint(canvas, line.End, true);
+                setPoint(canvas, line.Left, true);
+                setPoint(canvas, line.Right, true);
             }
 
             expectedIntersections

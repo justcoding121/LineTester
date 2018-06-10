@@ -18,11 +18,11 @@ namespace Advanced.Algorithms.Geometry
                 throw new Exception("Both lines are the same.");
             }
 
-            double x1 = lineA.Start.X, y1 = lineA.Start.Y;
-            double x2 = lineA.End.X, y2 = lineA.End.Y;
+            double x1 = lineA.Left.X, y1 = lineA.Left.Y;
+            double x2 = lineA.Right.X, y2 = lineA.Right.Y;
 
-            double x3 = lineB.Start.X, y3 = lineB.Start.Y;
-            double x4 = lineB.End.X, y4 = lineB.End.Y;
+            double x3 = lineB.Left.X, y3 = lineB.Left.Y;
+            double x4 = lineB.Right.X, y4 = lineB.Right.Y;
 
             var tolerance = Math.Round(Math.Pow(0.1, precision), precision);
 
@@ -143,10 +143,23 @@ namespace Advanced.Algorithms.Geometry
         /// <returns></returns>
         private static bool IsInsideLine(Line line, double x, double y)
         {
-            return (x >= line.Start.X && x <= line.End.X
-                        || x >= line.End.X && x <= line.Start.X)
-                   && (y >= line.Start.Y && y <= line.End.Y
-                        || y >= line.End.Y && y <= line.Start.Y);
+            return (x >= line.Left.X && x <= line.Right.X
+                        || x >= line.Right.X && x <= line.Left.X)
+                   && (y >= line.Left.Y && y <= line.Right.Y
+                        || y >= line.Right.Y && y <= line.Left.Y);
+        }
+    }
+
+    public static class LinExtensions
+    {
+        public static bool Intersects(this Line lineA, Line lineB)
+        {
+            return LineIntersection.FindIntersection(lineA, lineB) != null;
+        }
+
+        public static Point Intersection(this Line lineA, Line lineB)
+        {
+            return LineIntersection.FindIntersection(lineA, lineB);
         }
     }
 }
