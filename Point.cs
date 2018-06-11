@@ -2,10 +2,12 @@
 {
     public class Point
     {
-        public Point(double x, double y)
+        private readonly int precision;
+        public Point(double x, double y, int precision = 5)
         {
             X = x;
             Y = y;
+            this.precision = precision;
         }
         public double X { get; set; }
         public double Y { get; set; }
@@ -24,14 +26,15 @@
             }
 
             var thatPoint = that as Point;
-            return (thatPoint.X == X) && (thatPoint.Y == Y);
+            return (thatPoint.X.Truncate(precision) ==  X.Truncate(precision)) 
+                        && (thatPoint.Y.Truncate(precision) == Y.Truncate(precision));
         }
 
         public override int GetHashCode()
         {
             var hashCode = 33;
-            hashCode = hashCode * -21 + X.GetHashCode();
-            hashCode = hashCode * -21 + Y.GetHashCode();
+            hashCode = hashCode * -21 + X.Truncate(precision).GetHashCode();
+            hashCode = hashCode * -21 + Y.Truncate(precision).GetHashCode();
             return hashCode;
         }
 

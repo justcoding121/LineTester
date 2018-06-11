@@ -11,7 +11,7 @@ namespace Advanced.Algorithms.Geometry
         /// <param name="lineB"></param>
         /// <param name="precision">precision tolerance.</param>
         /// <returns>The point of intersection.</returns>
-        public static Point FindIntersection(Line lineA, Line lineB, int precision = 3)
+        public static Point FindIntersection(Line lineA, Line lineB, int precision = 5)
         {
             if (lineA == lineB)
             {
@@ -121,6 +121,9 @@ namespace Advanced.Algorithms.Geometry
                 }
             }
 
+            var orxX = x;
+            var orgY = y;
+
             x = truncate(x, precision);
             y = truncate(y, precision);
 
@@ -131,7 +134,7 @@ namespace Advanced.Algorithms.Geometry
             if (IsInsideLine(lineA, result, precision) &&
                 IsInsideLine(lineB, result, precision))
             {
-                return result;
+                return new Point(orxX, orgY);
             }
 
             //return default null (no intersection)
@@ -164,18 +167,18 @@ namespace Advanced.Algorithms.Geometry
 
         private static double truncate(double input, int precision)
         {
-            return Math.Truncate(input * Math.Pow(10, precision)) / Math.Pow(10, precision);
+            return input.Truncate(precision);
         }
     }
 
     public static class LinExtensions
     {
-        public static bool Intersects(this Line lineA, Line lineB, int precision = 3)
+        public static bool Intersects(this Line lineA, Line lineB, int precision = 5)
         {
             return LineIntersection.FindIntersection(lineA, lineB, precision) != null;
         }
 
-        public static Point Intersection(this Line lineA, Line lineB, int precision = 3)
+        public static Point Intersection(this Line lineA, Line lineB, int precision = 5)
         {
             return LineIntersection.FindIntersection(lineA, lineB, precision);
         }

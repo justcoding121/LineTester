@@ -42,7 +42,7 @@ namespace LineTester
         List<Advanced.Algorithms.Geometry.Point> actualIntersections
             = new List<Advanced.Algorithms.Geometry.Point>();
 
-        private static int nodeCount = 3;
+        private static int nodeCount = 100;
 
         private void generate(bool redo)
         {
@@ -52,8 +52,8 @@ namespace LineTester
                 expectedIntersections.Clear();
                 actualIntersections.Clear();
 
-                while (expectedIntersections.Count == actualIntersections.Count)
-                {
+                //while (expectedIntersections.Count == actualIntersections.Count)
+                //{
                     lines = getRandomLines(nodeCount);
 
                     while (lines.Any(x => x.Left.X == x.Right.X || x.Left.Y == x.Right.Y))
@@ -70,10 +70,10 @@ namespace LineTester
                     }
                     catch
                     {
-                        break;
+                     //   break;
                     }
 
-                }
+               //}
             }
             else
             {
