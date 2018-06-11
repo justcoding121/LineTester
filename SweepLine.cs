@@ -167,10 +167,12 @@ namespace Advanced.Algorithms.Geometry
         {
             var sweepLine = new Line(new Point(0, 0), new Point(0, int.MaxValue));
 
-            var eventQueue = new BMinHeap<Event>(lineSegments.SelectMany(x => new[] {
+            var currentEvents = new HashSet<Event>(lineSegments.SelectMany(x => new[] {
                                     new Event(x.Left, EventType.Start, x, sweepLine),
                                     new Event(x.Right, EventType.End, x, sweepLine)
-                                }), new EventQueueComparer());
+                                }));
+
+            var eventQueue = new BMinHeap<Event>(currentEvents, new EventQueueComparer());
 
             var currentlyTracked = new BST<Event>();
 
@@ -179,6 +181,7 @@ namespace Advanced.Algorithms.Geometry
             while (eventQueue.Count > 0)
             {
                 var currentEvent = eventQueue.ExtractMin();
+                currentEvents.Remove(currentEvent);
 
                 switch (currentEvent.Type)
                 {
@@ -194,11 +197,11 @@ namespace Advanced.Algorithms.Geometry
 
                         var lowerIntersection = findIntersection(currentEvent, lower);
                         recordIntersection(intersectionEvents, sweepLine, currentEvent, lower, lowerIntersection);
-                        enqueueIntersectionEvent(eventQueue, currentEvent, sweepLine, lowerIntersection);
+                        enqueueIntersectionEvent(eventQueue, currentEvents, currentEvent, sweepLine, lowerIntersection);
 
                         var upperIntersection = findIntersection(currentEvent, upper);
                         recordIntersection(intersectionEvents, sweepLine, currentEvent, upper, upperIntersection);
-                        enqueueIntersectionEvent(eventQueue, currentEvent, sweepLine, upperIntersection);
+                        enqueueIntersectionEvent(eventQueue, currentEvents, currentEvent, sweepLine, upperIntersection);
 
                         break;
 
@@ -212,7 +215,7 @@ namespace Advanced.Algorithms.Geometry
 
                         var upperLowerIntersection = findIntersection(lower, upper);
                         recordIntersection(intersectionEvents, sweepLine, lower, upper, upperLowerIntersection);
-                        enqueueIntersectionEvent(eventQueue, currentEvent, sweepLine, upperLowerIntersection);
+                        enqueueIntersectionEvent(eventQueue, currentEvents, currentEvent, sweepLine, upperLowerIntersection);
 
                         if (!currentlyTracked.Delete(currentEvent))
                         {
@@ -257,11 +260,11 @@ namespace Advanced.Algorithms.Geometry
 
                             var newLowerIntersection = findIntersection(lower, lowerLower);
                             recordIntersection(intersectionEvents, sweepLine, lower, lowerLower, newLowerIntersection);
-                            enqueueIntersectionEvent(eventQueue, currentEvent, sweepLine, newLowerIntersection);
+                            enqueueIntersectionEvent(eventQueue, currentEvents, currentEvent, sweepLine, newLowerIntersection);
 
                             var newUpperIntersection = findIntersection(upper, upperUpper);
                             recordIntersection(intersectionEvents, sweepLine, upper, upperUpper, newUpperIntersection);
-                            enqueueIntersectionEvent(eventQueue, currentEvent, sweepLine, newUpperIntersection);
+                            enqueueIntersectionEvent(eventQueue, currentEvents, currentEvent, sweepLine, newUpperIntersection);
                         }
 
                         break;
@@ -277,6 +280,7 @@ namespace Advanced.Algorithms.Geometry
         }
 
         private static void enqueueIntersectionEvent(BMinHeap<Event> eventQueue,
+         HashSet<Event> currentEvents,
           Event currentEvent, Line sweepLine, Point intersection)
         {
             if (intersection == null)
@@ -290,10 +294,12 @@ namespace Advanced.Algorithms.Geometry
                 || (sweepLine.Left.X.Truncate() == intersectionEvent.X.Truncate()
                    && currentEvent.Y.Truncate() < intersectionEvent.Y.Truncate()))
             {
-                if (!eventQueue.Exists(intersectionEvent))
+                if (!currentEvents.Contains(intersectionEvent))
                 {
                     eventQueue.Insert(intersectionEvent);
+                    currentEvents.Add(intersectionEvent);
                 }
+               
             }
 
         }

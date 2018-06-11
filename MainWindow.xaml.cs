@@ -52,8 +52,8 @@ namespace LineTester
                 expectedIntersections.Clear();
                 actualIntersections.Clear();
 
-                //while (expectedIntersections.Count == actualIntersections.Count)
-                //{
+                while (expectedIntersections.Count == actualIntersections.Count)
+                {
                     lines = getRandomLines(nodeCount);
 
                     while (lines.Any(x => x.Left.X == x.Right.X || x.Left.Y == x.Right.Y))
@@ -66,14 +66,14 @@ namespace LineTester
                     try
                     {
                         actualIntersections = Advanced.Algorithms.Geometry
-                        .SweepLineIntersection.FindIntersections(new HashSet<Advanced.Algorithms.Geometry.Line>(lines)).Select(x=>x.Key).ToList();
+                        .SweepLineIntersection.FindIntersections(new HashSet<Advanced.Algorithms.Geometry.Line>(lines)).Select(x => x.Key).ToList();
                     }
                     catch
                     {
-                     //   break;
+                        break;
                     }
 
-               //}
+                }
             }
             else
             {
