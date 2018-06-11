@@ -42,7 +42,7 @@ namespace LineTester
         List<Advanced.Algorithms.Geometry.Point> actualIntersections
             = new List<Advanced.Algorithms.Geometry.Point>();
 
-        private static int nodeCount = 10;
+        private static int nodeCount = 3;
 
         private void generate(bool redo)
         {
@@ -66,7 +66,7 @@ namespace LineTester
                     try
                     {
                         actualIntersections = Advanced.Algorithms.Geometry
-                        .SweepLineIntersection.FindIntersections(lines);
+                        .SweepLineIntersection.FindIntersections(new HashSet<Advanced.Algorithms.Geometry.Line>(lines)).Select(x=>x.Key).ToList();
                     }
                     catch
                     {
@@ -80,7 +80,7 @@ namespace LineTester
                 try
                 {
                     actualIntersections = Advanced.Algorithms.Geometry
-                .SweepLineIntersection.FindIntersections(lines);
+                .SweepLineIntersection.FindIntersections(new HashSet<Advanced.Algorithms.Geometry.Line>(lines)).Select(x => x.Key).ToList();
                 }
                 catch { }
 

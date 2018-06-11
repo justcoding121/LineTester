@@ -12,8 +12,8 @@
 
         public override bool Equals(object that)
         {
-            // Check for null values and compare run-time types.
-            if (that == null || GetType() != that.GetType())
+            // Check for null values 
+            if (that == null)
             {
                 return false;
             }

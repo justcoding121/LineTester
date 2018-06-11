@@ -160,7 +160,7 @@ namespace Advanced.Algorithms.DataStructures
                         node = node.Right;
                         if (node == null)
                         {
-                            throw new Exception("Item do not exist");
+                            return false;
                         }
 
                         continue;
@@ -172,7 +172,7 @@ namespace Advanced.Algorithms.DataStructures
                         node = node.Left;
                         if (node == null)
                         {
-                            throw new Exception("Item do not exist");
+                            return false;
                         }
                         continue;
                     }
@@ -365,7 +365,8 @@ namespace Advanced.Algorithms.DataStructures
                 throw new Exception("Given value is not found in this BST.");
             }
 
-            return nextLower(node).Value;
+            var next = nextLower(node);
+            return next !=null ? next.Value : default(T);
         }
 
         private static BSTNode<T> nextLower(BSTNode<T> node)
@@ -429,7 +430,8 @@ namespace Advanced.Algorithms.DataStructures
                 throw new Exception("Given value is not found in this BST.");
             }
 
-            return nextUpper(node).Value;
+            var next = nextUpper(node);
+            return next != null ? next.Value : default(T);
         }
 
         private BSTNode<T> nextUpper(BSTNode<T> node)

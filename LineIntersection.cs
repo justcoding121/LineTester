@@ -121,12 +121,17 @@ namespace Advanced.Algorithms.Geometry
                 }
             }
 
+            x = truncate(x, precision);
+            y = truncate(y, precision);
+
+            var result = new Point(x, y);
+
             //x,y can intersect outside the line segment since line is infinitely long
             //so finally check if x, y is within both the line segments
-            if (IsInsideLine(lineA, Math.Round(x, precision), Math.Round(y, precision)) &&
-                IsInsideLine(lineB, Math.Round(x, precision), Math.Round(y, precision)))
+            if (IsInsideLine(lineA, result, precision) &&
+                IsInsideLine(lineB, result, precision))
             {
-                return new Point(Math.Round(x, precision), Math.Round(y, precision));
+                return result;
             }
 
             //return default null (no intersection)
@@ -141,25 +146,38 @@ namespace Advanced.Algorithms.Geometry
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        private static bool IsInsideLine(Line line, double x, double y)
+        private static bool IsInsideLine(Line line, Point p, int precision)
         {
-            return (x >= line.Left.X && x <= line.Right.X
-                        || x >= line.Right.X && x <= line.Left.X)
-                   && (y >= line.Left.Y && y <= line.Right.Y
-                        || y >= line.Right.Y && y <= line.Left.Y);
+            double x = p.X, y = p.Y;
+
+            var leftX = truncate(line.Left.X, precision);
+            var leftY = truncate(line.Left.Y, precision);
+
+            var rightX = truncate(line.Right.X, precision);
+            var rightY = truncate(line.Right.Y, precision);
+
+            return (x >= leftX && x <= rightX
+                        || x >= rightX && x <= leftX)
+                   && (y >= leftY && y <= rightY
+                        || y >= rightY && y <= leftY);
+        }
+
+        private static double truncate(double input, int precision)
+        {
+            return Math.Truncate(input * Math.Pow(10, precision)) / Math.Pow(10, precision);
         }
     }
 
     public static class LinExtensions
     {
-        public static bool Intersects(this Line lineA, Line lineB)
+        public static bool Intersects(this Line lineA, Line lineB, int precision = 3)
         {
-            return LineIntersection.FindIntersection(lineA, lineB) != null;
+            return LineIntersection.FindIntersection(lineA, lineB, precision) != null;
         }
 
-        public static Point Intersection(this Line lineA, Line lineB)
+        public static Point Intersection(this Line lineA, Line lineB, int precision = 3)
         {
-            return LineIntersection.FindIntersection(lineA, lineB);
+            return LineIntersection.FindIntersection(lineA, lineB, precision);
         }
     }
 }
