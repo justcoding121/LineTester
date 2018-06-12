@@ -178,6 +178,9 @@ namespace Advanced.Algorithms.Geometry
 
             var intersectionEvents = new Dictionary<Point, HashSet<Tuple<Event, Event>>>();
 
+            var specialLines = new HashSet<Event>();
+            var normalLines = new HashSet<Event>();
+
             while (eventQueue.Count > 0)
             {
                 var currentEvent = eventQueue.ExtractMin();
@@ -189,6 +192,36 @@ namespace Advanced.Algorithms.Geometry
 
                         sweepLine.Left.X = currentEvent.X;
                         sweepLine.Right.X = currentEvent.X;
+
+                        if (specialLines.Count > 0)
+                        {
+                            foreach(var verticalLine in specialLines)
+                            {
+                                var intersection = findIntersection(currentEvent, verticalLine);
+                                recordIntersection(intersectionEvents, sweepLine, currentEvent, verticalLine, intersection);
+                                //enqueueIntersectionEvent(eventQueue, currentEvents, currentEvent, sweepLine, intersection);
+                            }
+                        }
+
+                       if(currentEvent.Segment.IsVertical
+                            || currentEvent.Segment.IsHorizontal)
+                        {
+                            specialLines.Add(currentEvent);
+
+                            foreach (var verticalLine in normalLines)
+                            {
+                                var intersection = findIntersection(currentEvent, verticalLine);
+                                recordIntersection(intersectionEvents, sweepLine, currentEvent, verticalLine, intersection);
+                                //enqueueIntersectionEvent(eventQueue, currentEvents, currentEvent, sweepLine, intersection);
+                            }
+
+                            break;
+                        }
+                        else
+                        {
+
+                            normalLines.Add(currentEvent);
+                        }
 
                         currentlyTracked.Insert(currentEvent);
 
@@ -207,19 +240,29 @@ namespace Advanced.Algorithms.Geometry
 
                     case EventType.End:
 
-                        sweepLine.Left.X = currentEvent.X;
-                        sweepLine.Right.X = currentEvent.X;
-
-                        lower = currentlyTracked.Previous(currentEvent);
-                        upper = currentlyTracked.Next(currentEvent);
-
-                        var upperLowerIntersection = findIntersection(lower, upper);
-                        recordIntersection(intersectionEvents, sweepLine, lower, upper, upperLowerIntersection);
-                        enqueueIntersectionEvent(eventQueue, currentEvents, currentEvent, sweepLine, upperLowerIntersection);
-
-                        if (!currentlyTracked.Delete(currentEvent))
+                        if (currentEvent.Segment.IsVertical
+                                                  || currentEvent.Segment.IsHorizontal)
                         {
-                            
+                            specialLines.Remove(currentEvent);
+                        }
+                        else
+                        {
+                            normalLines.Remove(currentEvent);
+
+                            sweepLine.Left.X = currentEvent.X;
+                            sweepLine.Right.X = currentEvent.X;
+
+                            lower = currentlyTracked.Previous(currentEvent);
+                            upper = currentlyTracked.Next(currentEvent);
+
+                            var upperLowerIntersection = findIntersection(lower, upper);
+                            recordIntersection(intersectionEvents, sweepLine, lower, upper, upperLowerIntersection);
+                            enqueueIntersectionEvent(eventQueue, currentEvents, currentEvent, sweepLine, upperLowerIntersection);
+
+                            if (!currentlyTracked.Delete(currentEvent))
+                            {
+
+                            }
                         }
 
                         break;
@@ -227,44 +270,35 @@ namespace Advanced.Algorithms.Geometry
                     case EventType.Intersection:
 
                         var intersectionLines = intersectionEvents[currentEvent as Point];
-                        var count = intersectionLines.Count;
 
-                        intersectionLines.RemoveWhere(x =>
-                        {
-                            return !(currentlyTracked.Delete(x.Item1)
-                                     && currentlyTracked.Delete(x.Item2));
-                        });
+                        var lowerLines = intersectionLines.Select(x => x.Item1).Distinct().ToList();
+                        var upperLines = intersectionLines.Select(x => x.Item2).Distinct().ToList();
 
-                        if (count != intersectionLines.Count)
-                        {
-                           // throw new Exception();
-                        }
+                        var allLines = lowerLines.Concat(upperLines).Distinct().ToList();
+
+                        allLines.ForEach(x => currentlyTracked.Delete(x));
 
                         sweepLine.Left.X = currentEvent.X;
                         sweepLine.Right.X = currentEvent.X;
 
-                        foreach (var intersectionLine in intersectionLines.ToList())
+                        allLines.ForEach(x => currentlyTracked.Insert(x));
+
+                        foreach (var upperLine in lowerLines)
                         {
-                            lower = intersectionLine.Item1;
-                            upper = intersectionLine.Item2;
+                            var upperUpper = currentlyTracked.Next(upperLine);
 
-                            currentlyTracked.Insert(lower);
-                            currentlyTracked.Insert(upper);
-
-                            var tmp = upper;
-                            upper = lower;
-                            lower = tmp;
-
-                            var lowerLower = currentlyTracked.Previous(lower);
-                            var upperUpper = currentlyTracked.Next(upper);
-
-                            var newLowerIntersection = findIntersection(lower, lowerLower);
-                            recordIntersection(intersectionEvents, sweepLine, lower, lowerLower, newLowerIntersection);
-                            enqueueIntersectionEvent(eventQueue, currentEvents, currentEvent, sweepLine, newLowerIntersection);
-
-                            var newUpperIntersection = findIntersection(upper, upperUpper);
-                            recordIntersection(intersectionEvents, sweepLine, upper, upperUpper, newUpperIntersection);
+                            var newUpperIntersection = findIntersection(upperLine, upperUpper);
+                            recordIntersection(intersectionEvents, sweepLine, upperLine, upperUpper, newUpperIntersection);
                             enqueueIntersectionEvent(eventQueue, currentEvents, currentEvent, sweepLine, newUpperIntersection);
+                        }
+
+                        foreach (var lowerLine in upperLines)
+                        {
+                            var lowerLower = currentlyTracked.Previous(lowerLine);
+
+                            var newLowerIntersection = findIntersection(lowerLine, lowerLower);
+                            recordIntersection(intersectionEvents, sweepLine, lowerLine, lowerLower, newLowerIntersection);
+                            enqueueIntersectionEvent(eventQueue, currentEvents, currentEvent, sweepLine, newLowerIntersection);
                         }
 
                         break;
@@ -275,8 +309,8 @@ namespace Advanced.Algorithms.Geometry
 
             return intersectionEvents.ToDictionary(x => x.Key,
                                                    x => x.Value.SelectMany(y => new[] { y.Item1.Segment, y.Item2.Segment })
-                                                            .Distinct()
-                                                            .ToList());
+                                                        .Distinct()
+                                                        .ToList());
         }
 
         private static void enqueueIntersectionEvent(BMinHeap<Event> eventQueue,

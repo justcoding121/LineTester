@@ -43,14 +43,14 @@ namespace Advanced.Algorithms.Geometry
 
             double x3 = lineB.Left.X, y3 = lineB.Left.Y;
             double x4 = lineB.Right.X, y4 = lineB.Right.Y;
-
-          
+         
 
             //equations of the form x=c (two vertical lines)
             if (Math.Abs(x1 - x2) < tolerance
                 && Math.Abs(x3 - x4) < tolerance
                 && Math.Abs(x1 - x3) < tolerance)
             {
+                //get the first intersection in vertical sorted order of lines
                 var firstIntersection = new Point(x3.Truncate(), y3.Truncate());
 
                 //x,y can intersect outside the line segment since line is infinitely long
@@ -67,8 +67,10 @@ namespace Advanced.Algorithms.Geometry
                 && Math.Abs(y3 - y4) < tolerance
                 && Math.Abs(y1 - y3) < tolerance)
             {
+                //get the first intersection in horizontal sorted order of lines
                 var firstIntersection = new Point(x3.Truncate(), y3.Truncate());
 
+                //get the first intersection in sorted order
                 //x,y can intersect outside the line segment since line is infinitely long
                 //so finally check if x, y is within both the line segments
                 if (IsInsideLine(lineA, firstIntersection, precision) &&

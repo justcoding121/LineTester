@@ -34,6 +34,9 @@
         public Point Left { get; set; }
         public Point Right { get; set; }
 
+        public bool IsVertical => Left.X.Truncate().Equals(Right.X.Truncate());
+        public bool IsHorizontal => Left.Y.Truncate().Equals(Right.Y.Truncate());
+
         public override bool Equals(object that)
         {
             // Check for null values.
