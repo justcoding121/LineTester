@@ -219,7 +219,7 @@ namespace Advanced.Algorithms.Geometry
 
                         if (!currentlyTracked.Delete(currentEvent))
                         {
-                            throw new Exception();
+                            
                         }
 
                         break;
@@ -237,7 +237,7 @@ namespace Advanced.Algorithms.Geometry
 
                         if (count != intersectionLines.Count)
                         {
-                            throw new Exception();
+                           // throw new Exception();
                         }
 
                         sweepLine.Left.X = currentEvent.X;

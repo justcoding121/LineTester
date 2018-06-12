@@ -133,7 +133,7 @@ namespace Advanced.Algorithms.DataStructures
         {
             if (Root == null)
             {
-                throw new Exception("Empty BST");
+                return false;
             }
 
             var deleted = delete(Root, value);
@@ -362,7 +362,7 @@ namespace Advanced.Algorithms.DataStructures
             var node = FindNode(value);
             if (node == null)
             {
-                throw new Exception("Given value is not found in this BST.");
+                return default(T);
             }
 
             var next = nextLower(node);
@@ -427,7 +427,7 @@ namespace Advanced.Algorithms.DataStructures
             var node = FindNode(value);
             if (node == null)
             {
-                throw new Exception("Given value is not found in this BST.");
+                return default(T);
             }
 
             var next = nextUpper(node);

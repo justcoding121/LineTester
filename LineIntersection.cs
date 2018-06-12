@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace Advanced.Algorithms.Geometry
 {
@@ -18,24 +19,63 @@ namespace Advanced.Algorithms.Geometry
                 throw new Exception("Both lines are the same.");
             }
 
+            var tolerance = Math.Round(Math.Pow(0.1, precision), precision);
+
+            //make lineA as left
+            if (lineA.Left.X.Truncate().CompareTo(lineB.Left.X.Truncate()) > 0)
+            {
+                var tmp = lineA;
+                lineA = lineB;
+                lineB = tmp;
+            }
+            else if (lineA.Left.X.Truncate().CompareTo(lineB.Left.X.Truncate()) == 0)
+            {
+                if (lineA.Left.Y.Truncate().CompareTo(lineB.Left.Y.Truncate()) > 0)
+                {
+                    var tmp = lineA;
+                    lineA = lineB;
+                    lineB = tmp;
+                }
+            }
+
             double x1 = lineA.Left.X, y1 = lineA.Left.Y;
             double x2 = lineA.Right.X, y2 = lineA.Right.Y;
 
             double x3 = lineB.Left.X, y3 = lineB.Left.Y;
             double x4 = lineB.Right.X, y4 = lineB.Right.Y;
 
-            var tolerance = Math.Round(Math.Pow(0.1, precision), precision);
+          
 
             //equations of the form x=c (two vertical lines)
-            if (Math.Abs(x1 - x2) < tolerance && Math.Abs(x3 - x4) < tolerance && Math.Abs(x1 - x3) < tolerance)
+            if (Math.Abs(x1 - x2) < tolerance
+                && Math.Abs(x3 - x4) < tolerance
+                && Math.Abs(x1 - x3) < tolerance)
             {
-                throw new Exception("Both lines overlap vertically, ambiguous intersection points.");
+                var firstIntersection = new Point(x3.Truncate(), y3.Truncate());
+
+                //x,y can intersect outside the line segment since line is infinitely long
+                //so finally check if x, y is within both the line segments
+                if (IsInsideLine(lineA, firstIntersection, precision) &&
+                    IsInsideLine(lineB, firstIntersection, precision))
+                {
+                    return new Point(x3, y3);
+                }
             }
 
             //equations of the form y=c (two horizontal lines)
-            if (Math.Abs(y1 - y2) < tolerance && Math.Abs(y3 - y4) < tolerance && Math.Abs(y1 - y3) < tolerance)
+            if (Math.Abs(y1 - y2) < tolerance
+                && Math.Abs(y3 - y4) < tolerance
+                && Math.Abs(y1 - y3) < tolerance)
             {
-                throw new Exception("Both lines overlap horizontally, ambiguous intersection points.");
+                var firstIntersection = new Point(x3.Truncate(), y3.Truncate());
+
+                //x,y can intersect outside the line segment since line is infinitely long
+                //so finally check if x, y is within both the line segments
+                if (IsInsideLine(lineA, firstIntersection, precision) &&
+                    IsInsideLine(lineB, firstIntersection, precision))
+                {
+                    return new Point(x3, y3);
+                }
             }
 
             //equations of the form x=c (two vertical lines)

@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using Advanced.Algorithms.Geometry;
 
 namespace LineTester
 {
@@ -42,7 +43,7 @@ namespace LineTester
         List<Advanced.Algorithms.Geometry.Point> actualIntersections
             = new List<Advanced.Algorithms.Geometry.Point>();
 
-        private static int nodeCount = 100;
+        private static int nodeCount = 3;
 
         private void generate(bool redo)
         {
@@ -56,10 +57,10 @@ namespace LineTester
                 {
                     lines = getRandomLines(nodeCount);
 
-                    while (lines.Any(x => x.Left.X == x.Right.X || x.Left.Y == x.Right.Y))
-                    {
-                        lines = getRandomLines(nodeCount);
-                    }
+                    //while (lines.Any(x => x.Left.X == x.Right.X || x.Left.Y == x.Right.Y))
+                    //{
+                    //    lines = getRandomLines(nodeCount);
+                    //}
 
                     expectedIntersections = getExpectedIntersections(lines);
 
@@ -79,6 +80,7 @@ namespace LineTester
             {
                 try
                 {
+                    expectedIntersections = getExpectedIntersections(lines);
                     actualIntersections = Advanced.Algorithms.Geometry
                 .SweepLineIntersection.FindIntersections(new HashSet<Advanced.Algorithms.Geometry.Line>(lines)).Select(x => x.Key).ToList();
                 }
@@ -102,7 +104,7 @@ namespace LineTester
             foreach (var line in lines)
             {
                 // Add a Line Element
-                var myLine = new Line();
+                var myLine = new System.Windows.Shapes.Line();
                 myLine.Stroke = System.Windows.Media.Brushes.LightSteelBlue;
 
                 myLine.X1 = line.Left.X;
@@ -207,6 +209,8 @@ namespace LineTester
 
             //lines.AddRange(new[] { s1, s2, s3, s4 });
 
+            lines = verticalLines();
+
             while (lineCount > 0)
             {
                 lines.Add(getRandomLine());
@@ -215,6 +219,21 @@ namespace LineTester
 
             return lines;
         }
+
+        private static List<Advanced.Algorithms.Geometry.Line> verticalLines()
+        {
+            var lines = new List<Advanced.Algorithms.Geometry.Line>();
+
+            var s1 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(100, 200), new Advanced.Algorithms.Geometry.Point(100, 600));
+            var s2 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(100, 225), new Advanced.Algorithms.Geometry.Point(100, 625));
+            var s3 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(100, 250), new Advanced.Algorithms.Geometry.Point(100, 475));
+            var s4 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(100, 290), new Advanced.Algorithms.Geometry.Point(100, 675));
+
+            lines.AddRange(new[] { s1, s2, s3, s4 });
+
+            return lines;
+        }
+
         private static Advanced.Algorithms.Geometry.Line getRandomLine()
         {
             return new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(random.Next(0, 1000) * random.NextDouble(), random.Next(0, 1000) * random.NextDouble()),
