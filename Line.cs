@@ -69,5 +69,12 @@
             return hashCode;
         }
 
+        public Line Clone()
+        {
+            return new Line(Left.Clone(), Right.Clone());
+        }
+
     }
+
+
 }

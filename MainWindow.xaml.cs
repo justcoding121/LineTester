@@ -66,8 +66,9 @@ namespace LineTester
 
                     try
                     {
+                        var hashSet = new HashSet<Advanced.Algorithms.Geometry.Line>(lines);
                         actualIntersections = Advanced.Algorithms.Geometry
-                        .SweepLineIntersection.FindIntersections(new HashSet<Advanced.Algorithms.Geometry.Line>(lines)).Select(x => x.Key).ToList();
+                        .SweepLineIntersection.FindIntersections(hashSet).Select(x => x.Key).ToList();
                     }
                     catch
                     {

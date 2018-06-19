@@ -59,6 +59,7 @@
     <Compile Include="Line.cs" />
     <Compile Include="LineIntersection.cs" />
     <Compile Include="Point.cs" />
+    <Compile Include="RedBlackTree.cs" />
     <Compile Include="SweepLine.cs" />
     <Compile Include="TestHelper.cs" />
     <Page Include="MainWindow.xaml">

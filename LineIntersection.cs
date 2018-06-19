@@ -5,6 +5,8 @@ namespace Advanced.Algorithms.Geometry
 {
     public class LineIntersection
     {
+        private static int calls;
+
         /// <summary>
         ///  Returns Point of intersection if do intersect otherwise default Point (null)
         /// </summary>
@@ -14,6 +16,7 @@ namespace Advanced.Algorithms.Geometry
         /// <returns>The point of intersection.</returns>
         public static Point FindIntersection(Line lineA, Line lineB, int precision = 5)
         {
+            calls++;
             if (lineA == lineB)
             {
                 throw new Exception("Both lines are the same.");
@@ -45,7 +48,7 @@ namespace Advanced.Algorithms.Geometry
             double x4 = lineB.Right.X, y4 = lineB.Right.Y;
          
 
-            //equations of the form x=c (two vertical lines)
+            //equations of the form x=c (two vertical overlapping lines)
             if (Math.Abs(x1 - x2) < tolerance
                 && Math.Abs(x3 - x4) < tolerance
                 && Math.Abs(x1 - x3) < tolerance)
@@ -62,7 +65,7 @@ namespace Advanced.Algorithms.Geometry
                 }
             }
 
-            //equations of the form y=c (two horizontal lines)
+            //equations of the form y=c (two overlapping horizontal lines)
             if (Math.Abs(y1 - y2) < tolerance
                 && Math.Abs(y3 - y4) < tolerance
                 && Math.Abs(y1 - y3) < tolerance)

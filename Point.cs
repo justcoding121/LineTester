@@ -42,5 +42,10 @@
         {
             return X.ToString("F") + " " + Y.ToString("F");
         }
+
+        public Point Clone()
+        {
+            return new Point(X, Y);
+        }
     }
 }
