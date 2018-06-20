@@ -909,5 +909,20 @@ namespace Advanced.Algorithms.DataStructures
                 }
             }
         }
+
+        internal void Swap(T value1, T value2)
+        {
+            var node1 = find(Root, value1);
+            var node2 = find(Root, value2);
+
+            if(node1 == null|| node2 == null)
+            {
+                throw new Exception("Value1, Value2 or both was not found in this BST.");
+            }
+
+            var tmp = node1.Value;
+            node1.Value = node2.Value;
+            node2.Value = tmp;
+        }
     }
 }
