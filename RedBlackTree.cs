@@ -55,12 +55,26 @@ namespace Advanced.Algorithms.DataStructures
         internal RedBlackTreeNode<T> Root { get; private set; }
         public int Count { get; private set; }
 
+        private readonly Dictionary<T, RedBlackTreeNode<T>> nodeLookUp;
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="enableNodeLookUp">Enabling lookup will fasten deletion/insertion/exists operations
+        /// by using a dictionary<T, RedBlackTreeNode<T> at the cost of additional space.</param>
+        public RedBlackTree(bool enableNodeLookUp = false)
+        {
+            if (enableNodeLookUp)
+            {
+                nodeLookUp = new Dictionary<T, RedBlackTreeNode<T>>();
+            }
+        }
+
         //O(log(n)) worst O(n) for unbalanced tree
         public int GetHeight()
         {
             return getHeight(Root);
         }
-
 
         //O(log(n)) worst O(n) for unbalanced tree
         private int getHeight(RedBlackTreeNode<T> node)
@@ -82,31 +96,10 @@ namespace Advanced.Algorithms.DataStructures
 
             return find(Root, value) != null;
         }
-        public T FindMax()
+
+        public T Max()
         {
             return findMax(Root).Value;
-        }
-
-        internal List<T> GetAllNodes()
-        {
-            var allNodes = new List<T>();
-
-            GetAllNodes(allNodes, Root);
-
-            return allNodes;
-        }
-
-        internal void GetAllNodes(List<T> allNodes, RedBlackTreeNode<T> currentNode)
-        {
-            while (true)
-            {
-                if (currentNode == null) return;
-
-                allNodes.Add(currentNode.Value);
-
-                GetAllNodes(allNodes, currentNode.Left);
-                currentNode = currentNode.Right;
-            }
         }
 
         internal void Clear()
@@ -124,7 +117,7 @@ namespace Advanced.Algorithms.DataStructures
             }
         }
 
-        public T FindMin()
+        public T Min()
         {
             return findMin(Root).Value;
         }
@@ -228,6 +221,7 @@ namespace Advanced.Algorithms.DataStructures
             {
                 Root = newRoot;
             }
+
         }
 
         private void leftRotate(RedBlackTreeNode<T> node)
@@ -277,28 +271,22 @@ namespace Advanced.Algorithms.DataStructures
             if (Root == null)
             {
                 Root = new RedBlackTreeNode<T>(null, value) { NodeColor = RedBlackTreeNodeColor.Black };
+                if(nodeLookUp!=null)
+                {
+                    nodeLookUp[value] = Root;
+                }
                 Count++;
                 return;
             }
 
-            insert(Root, value);
-            Count++;
-        }
+            var newNode = insert(Root, value);
 
-        //O(log(n)) always
-        internal RedBlackTreeNode<T> InsertAndReturnNewNode(T value)
-        {
-            //empty tree
-            if (Root == null)
+            if (nodeLookUp != null)
             {
-                Root = new RedBlackTreeNode<T>(null, value) { NodeColor = RedBlackTreeNodeColor.Black };
-                Count++;
-                return Root;
+                nodeLookUp[value] = newNode;
             }
 
-            var newNode = insert(Root, value);
             Count++;
-            return newNode;
         }
 
         //O(log(n)) always
@@ -465,6 +453,7 @@ namespace Advanced.Algorithms.DataStructures
             }
 
             delete(Root, value);
+            nodeLookUp.Remove(value);
             Count--;
         }
 
@@ -915,7 +904,7 @@ namespace Advanced.Algorithms.DataStructures
             var node1 = find(Root, value1);
             var node2 = find(Root, value2);
 
-            if(node1 == null|| node2 == null)
+            if (node1 == null || node2 == null)
             {
                 throw new Exception("Value1, Value2 or both was not found in this BST.");
             }
