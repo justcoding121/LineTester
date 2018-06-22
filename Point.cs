@@ -9,8 +9,8 @@
             Y = y;
             this.precision = precision;
         }
-        public double X { get; set; }
-        public double Y { get; set; }
+        public double X { get; internal set; }
+        public double Y { get; internal set; }
 
         public override bool Equals(object that)
         {

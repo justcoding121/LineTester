@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using Advanced.Algorithms.Geometry;
+using System.Diagnostics;
 
 namespace LineTester
 {
@@ -47,6 +48,8 @@ namespace LineTester
 
         private void generate(bool redo)
         {
+            var sweepLine = new SweepLineIntersection();
+
             if (!redo)
             {
                 lines = new List<Advanced.Algorithms.Geometry.Line>();
@@ -61,14 +64,24 @@ namespace LineTester
                     //{
                     //    lines = getRandomLines(nodeCount);
                     //}
-
+                    var watch = new Stopwatch();
+                    watch.Start();
                     expectedIntersections = getExpectedIntersections(lines);
+                    watch.Stop();
+
+                    var orgElapsed = watch.ElapsedMilliseconds;
+                    watch.Reset();
+
                     var orgCalls = LineIntersection.calls;
                     try
                     {
                         var hashSet = new HashSet<Advanced.Algorithms.Geometry.Line>(lines);
-                        actualIntersections = Advanced.Algorithms.Geometry
-                        .SweepLineIntersection.FindIntersections(hashSet).Select(x => x.Key).ToList();
+                        watch.Start();
+                        var actual = sweepLine.FindIntersections(hashSet);
+                        watch.Start();
+
+                        var elaped = watch.ElapsedMilliseconds;
+                        actualIntersections = actual.Select(x => x.Key).ToList();
                         var maxHeight = SweepLineIntersection.intersectionCount;
                     }
                     catch
@@ -87,7 +100,7 @@ namespace LineTester
                     expectedIntersections = getExpectedIntersections(lines);
                   
                    var ss = new HashSet<Advanced.Algorithms.Geometry.Line>(lines);
-                    actualIntersections = Advanced.Algorithms.Geometry.SweepLineIntersection.FindIntersections(ss)
+                    actualIntersections = sweepLine.FindIntersections(ss)
                         .Select(x => x.Key).ToList();
                 }
                 catch { }
