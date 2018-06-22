@@ -61,6 +61,19 @@
             return false;
         }
 
+        public double Slope()
+        {
+            Point left = Left, right = Right;
+
+            //vertical line has infinite slope
+            if (left.Y.Truncate() == right.Y.Truncate())
+            {
+                return double.MaxValue;
+            }
+
+            return (right.Y - left.Y) / (right.X - left.X);
+        }
+
         public override int GetHashCode()
         {
             var hashCode = 18;

@@ -107,7 +107,7 @@ namespace Advanced.Algorithms.Geometry
             }
             else
             {
-                slope1 = getSlope(line1).Truncate();
+                slope1 = line1.Slope();
                 slopeCache[line1] = slope1;
             }
 
@@ -119,7 +119,7 @@ namespace Advanced.Algorithms.Geometry
             }
             else
             {
-                slope2 = getSlope(line2).Truncate();
+                slope2 = line2.Slope();
                 slopeCache[line2] = slope2;
             }
 
@@ -145,18 +145,7 @@ namespace Advanced.Algorithms.Geometry
             return result;
         }
 
-        private double getSlope(Line line)
-        {
-            Point left = line.Left, right = line.Right;
-
-            //vertical line has infinite slope
-            if (left.Y.Truncate() == right.Y.Truncate())
-            {
-                return double.MaxValue;
-            }
-
-            return (right.Y - left.Y) / (right.X - left.X);
-        }
+      
 
         public override bool Equals(object that)
         {
@@ -245,7 +234,7 @@ namespace Advanced.Algorithms.Geometry
                                     x.Key,
                                     x.Value
                                 }));
-            
+
             var eventQueue = new BMinHeap<Event>(currentEvents, new EventQueueComparer());
 
             var currentlyTracked = new RedBlackTree<Event>(true);
@@ -339,7 +328,7 @@ namespace Advanced.Algorithms.Geometry
 
                     case EventType.Intersection:
 
-                   
+
                         sweepLine.Left.X = currentEvent.X;
                         sweepLine.Right.X = currentEvent.X;
 
@@ -353,7 +342,6 @@ namespace Advanced.Algorithms.Geometry
                         foreach (var item in intersectionLines)
                         {
                             var upperLine = item.Item1;
-
                             var upperUpper = currentlyTracked.Next(upperLine);
 
                             intersectionCount++;
@@ -362,7 +350,6 @@ namespace Advanced.Algorithms.Geometry
                             enqueueIntersectionEvent(eventQueue, currentEvents, currentEvent, sweepLine, newUpperIntersection);
 
                             var lowerLine = item.Item2;
-      
                             var lowerLower = currentlyTracked.Previous(lowerLine);
 
                             intersectionCount++;
@@ -373,7 +360,7 @@ namespace Advanced.Algorithms.Geometry
 
                         break;
                 }
-               
+
             }
 
             return intersectionEvents.ToDictionary(x => x.Key,
@@ -429,8 +416,7 @@ namespace Advanced.Algorithms.Geometry
             var existing = intersectionEvents.ContainsKey(intersection) ?
                     intersectionEvents[intersection] : new HashSet<Tuple<Event, Event>>();
 
-            intersectionCount++;
-            if (line1.CompareTo(line2) < 0)
+            if (line1.Segment.Slope().CompareTo(line2.Segment.Slope()) > 0)
             {
                 existing.Add(new Tuple<Event, Event>(line1, line2));
             }
