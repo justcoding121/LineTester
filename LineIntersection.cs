@@ -5,7 +5,7 @@ namespace Advanced.Algorithms.Geometry
 {
     public class LineIntersection
     {
-        private static int calls;
+        internal static int calls;
 
         /// <summary>
         ///  Returns Point of intersection if do intersect otherwise default Point (null)
