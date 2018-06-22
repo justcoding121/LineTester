@@ -77,6 +77,7 @@ namespace LineTester
                     }
                     var calls = LineIntersection.calls - orgCalls;
                     LineIntersection.calls = 0;
+                    SweepLineIntersection.intersectionCount = 0;
                 }
             }
             else

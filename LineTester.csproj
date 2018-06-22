@@ -53,6 +53,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AvlTree.cs" />
     <Compile Include="BMinHeap.cs" />
     <Compile Include="BST.cs" />
     <Compile Include="DoubleExtensions.cs" />
