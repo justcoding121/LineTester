@@ -12,32 +12,6 @@
         public double X { get; private set; }
         public double Y { get; private set; }
 
-        public override bool Equals(object that)
-        {
-            // Check for null values 
-            if (that == null)
-            {
-                return false;
-            }
-
-            if (that == this)
-            {
-                return true;
-            }
-
-            var thatPoint = that as Point;
-            return (thatPoint.X.Truncate(precision) ==  X.Truncate(precision)) 
-                        && (thatPoint.Y.Truncate(precision) == Y.Truncate(precision));
-        }
-
-        public override int GetHashCode()
-        {
-            var hashCode = 33;
-            hashCode = hashCode * -21 + X.Truncate(precision).GetHashCode();
-            hashCode = hashCode * -21 + Y.Truncate(precision).GetHashCode();
-            return hashCode;
-        }
-
         public override string ToString()
         {
             return X.ToString("F") + " " + Y.ToString("F");

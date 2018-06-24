@@ -4,21 +4,24 @@ namespace Advanced.Algorithms.Geometry
 {
     public class Line
     {
+        private readonly double tolerance;
+
         public Point Left { get; private set; }
         public Point Right { get; private set; }
 
-        public bool IsVertical => Left.X.Truncate().Equals(Right.X.Truncate());
-        public bool IsHorizontal => Left.Y.Truncate().Equals(Right.Y.Truncate());
+        public bool IsVertical => Left.X.IsEqual(Right.X, tolerance);
+        public bool IsHorizontal => Left.Y.IsEqual(Right.Y, tolerance);
 
         public double Slope => slope.Value;
 
-        internal Line()
+        internal Line(int precision)
         {
+            tolerance = Math.Round(Math.Pow(0.1, precision), precision);
             slope = new Lazy<double>(() => calcSlope());
         }
 
-        public Line(Point start, Point end)
-            : this()
+        public Line(Point start, Point end, int precision = 5)
+            : this(precision)
         {
             if (start.X < end.X)
             {
@@ -53,20 +56,17 @@ namespace Advanced.Algorithms.Geometry
             Point left = Left, right = Right;
 
             //vertical line has infinite slope
-            if (left.Y.Truncate() == right.Y.Truncate())
+            if (left.Y.IsEqual(right.Y, tolerance))
             {
                 return double.MaxValue;
             }
 
-            return ((right.Y - left.Y) / (right.X - left.X)).Truncate();
+            return ((right.Y - left.Y) / (right.X - left.X));
         }
 
         public Line Clone()
         {
             return new Line(Left.Clone(), Right.Clone());
         }
-
     }
-
-
 }
