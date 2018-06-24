@@ -25,15 +25,15 @@ namespace Advanced.Algorithms.Geometry
             var tolerance = Math.Round(Math.Pow(0.1, precision), precision);
 
             //make lineA as left
-            if (lineA.Left.X.Truncate().CompareTo(lineB.Left.X.Truncate()) > 0)
+            if (lineA.Left.X.Compare(lineB.Left.X, tolerance) > 0)
             {
                 var tmp = lineA;
                 lineA = lineB;
                 lineB = tmp;
             }
-            else if (lineA.Left.X.Truncate().CompareTo(lineB.Left.X.Truncate()) == 0)
+            else if (lineA.Left.X.Compare(lineB.Left.X, tolerance) == 0)
             {
-                if (lineA.Left.Y.Truncate().CompareTo(lineB.Left.Y.Truncate()) > 0)
+                if (lineA.Left.Y.Compare(lineB.Left.Y, tolerance) > 0)
                 {
                     var tmp = lineA;
                     lineA = lineB;
@@ -49,12 +49,12 @@ namespace Advanced.Algorithms.Geometry
          
 
             //equations of the form x=c (two vertical overlapping lines)
-            if (Math.Abs(x1 - x2) < tolerance
-                && Math.Abs(x3 - x4) < tolerance
-                && Math.Abs(x1 - x3) < tolerance)
+            if (x1.IsEqual(x2, tolerance)
+                && x3.IsEqual(x4, tolerance)
+                && x1.IsEqual(x3, tolerance))
             {
                 //get the first intersection in vertical sorted order of lines
-                var firstIntersection = new Point(x3.Truncate(), y3.Truncate());
+                var firstIntersection = new Point(x3, y3);
 
                 //x,y can intersect outside the line segment since line is infinitely long
                 //so finally check if x, y is within both the line segments
@@ -66,12 +66,12 @@ namespace Advanced.Algorithms.Geometry
             }
 
             //equations of the form y=c (two overlapping horizontal lines)
-            if (Math.Abs(y1 - y2) < tolerance
-                && Math.Abs(y3 - y4) < tolerance
-                && Math.Abs(y1 - y3) < tolerance)
+            if (y1.IsEqual(y2, tolerance)
+                && y3.IsEqual(y4, tolerance)
+                && y1.IsEqual(y3, tolerance))
             {
                 //get the first intersection in horizontal sorted order of lines
-                var firstIntersection = new Point(x3.Truncate(), y3.Truncate());
+                var firstIntersection = new Point(x3, y3);
 
                 //get the first intersection in sorted order
                 //x,y can intersect outside the line segment since line is infinitely long
@@ -84,13 +84,13 @@ namespace Advanced.Algorithms.Geometry
             }
 
             //equations of the form x=c (two vertical lines)
-            if (Math.Abs(x1 - x2) < tolerance && Math.Abs(x3 - x4) < tolerance)
+            if (x1.IsEqual(x2, tolerance) && x3.IsEqual(x4, tolerance))
             {
                 return null;
             }
 
             //equations of the form y=c (two horizontal lines)
-            if (Math.Abs(y1 - y2) < tolerance && Math.Abs(y3 - y4) < tolerance)
+            if (y1.IsEqual(y2, tolerance) && y3.IsEqual(y4, tolerance))
             {
                 return null;
             }
@@ -166,20 +166,14 @@ namespace Advanced.Algorithms.Geometry
                 }
             }
 
-            var orxX = x;
-            var orgY = y;
-
-            x = truncate(x, precision);
-            y = truncate(y, precision);
-
             var result = new Point(x, y);
 
             //x,y can intersect outside the line segment since line is infinitely long
             //so finally check if x, y is within both the line segments
-            if (IsInsideLine(lineA, result, precision) &&
-                IsInsideLine(lineB, result, precision))
+            if (IsInsideLine(lineA, result, tolerance) &&
+                IsInsideLine(lineB, result, tolerance))
             {
-                return new Point(orxX, orgY);
+                return result;
             }
 
             //return default null (no intersection)
@@ -194,26 +188,22 @@ namespace Advanced.Algorithms.Geometry
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        private static bool IsInsideLine(Line line, Point p, int precision)
+        private static bool IsInsideLine(Line line, Point p, double tolerance)
         {
             double x = p.X, y = p.Y;
 
-            var leftX = truncate(line.Left.X, precision);
-            var leftY = truncate(line.Left.Y, precision);
+            var leftX = line.Left.X;
+            var leftY = line.Left.Y;
 
-            var rightX = truncate(line.Right.X, precision);
-            var rightY = truncate(line.Right.Y, precision);
+            var rightX = line.Right.X;
+            var rightY = line.Right.Y;
 
-            return (x >= leftX && x <= rightX
-                        || x >= rightX && x <= leftX)
-                   && (y >= leftY && y <= rightY
-                        || y >= rightY && y <= leftY);
+            return (x.IsGreaterThanOrEqual(leftX, tolerance) && x.IsLessThanOrEqual(rightX, tolerance)
+                        || x.IsGreaterThanOrEqual(rightX, tolerance) && x.IsLessThanOrEqual(leftX, tolerance))
+                   && (y.IsGreaterThanOrEqual(leftY, tolerance) && y.IsLessThanOrEqual(rightY, tolerance)
+                        || y.IsGreaterThanOrEqual(rightY, tolerance) && y.IsLessThanOrEqual(leftY, tolerance));
         }
 
-        private static double truncate(double input, int precision)
-        {
-            return input.Truncate(precision);
-        }
     }
 
     public static class LinExtensions

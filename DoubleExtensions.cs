@@ -8,7 +8,7 @@ namespace Advanced.Algorithms.Geometry
 {
     internal static class DoubleExtensions
     {
-        private static readonly string formatString = "0." + new string ('#', 339);
+        private static readonly string formatString = "0." + new string('#', 339);
 
         internal static double Truncate(this double input, int precision = 5)
         {
@@ -26,24 +26,44 @@ namespace Advanced.Algorithms.Geometry
             return input;
         }
 
-        internal static bool IsEqual(this double a, double b, int precision)
+        internal static bool IsEqual(this double a, double b, double tolerance)
         {
-            throw new NotImplementedException();
+            return Math.Abs(a - b) < tolerance;
         }
 
-        internal static bool IsLessThan(this double a, double b, int precision)
+        internal static bool IsLessThan(this double a, double b, double tolerance)
         {
-            throw new NotImplementedException();
+            return (a - b) < -tolerance;
         }
 
-        internal static bool IsGreaterThan(this double a, double b, int precision)
+        internal static bool IsLessThanOrEqual(this double a, double b, double tolerance)
         {
-            throw new NotImplementedException();
+            var result = a - b;
+
+            return result < -tolerance || Math.Abs(result) < tolerance;
         }
 
-        internal static int CompareTo(this double a, double b, int precision)
+        internal static bool IsGreaterThan(this double a, double b, double tolerance)
         {
-            throw new NotImplementedException();
+            return (a - b) > tolerance;
+        }
+
+        internal static bool IsGreaterThanOrEqual(this double a, double b, double tolerance)
+        {
+            var result = a - b;
+            return result > tolerance || Math.Abs(result) < tolerance;
+        }
+
+        internal static int Compare(this double a, double b, double tolerance)
+        {
+            var result = a - b;
+
+            if(Math.Abs(result) < tolerance)
+            {
+                return 0;
+            }
+
+            return (a - b) < -tolerance ? -1 : 1; 
         }
     }
 }
