@@ -254,7 +254,6 @@ namespace Advanced.Algorithms.DataStructures
         {
             while (true)
             {
-                Geometry.BentleyOttmann.intersectionCount++;
                 var compareResult = currentNode.Value.CompareTo(newNodeValue);
 
                 //current node is less than new item
