@@ -153,6 +153,42 @@ namespace Advanced.Algorithms.Geometry
         }
     }
 
+    internal class PointComparer : IEqualityComparer<Point>
+    {
+        private readonly double tolerance;
+
+        internal PointComparer(double tolerance)
+        {
+            this.tolerance = tolerance;
+        }
+
+        public bool Equals(Point x, Point y)
+        {
+            // Check for null values 
+            if (x == null || y == null)
+            {
+                return false;
+            }
+
+            if (x == y)
+            {
+                return true;
+            }
+
+            return (x.X.IsEqual(y.X, tolerance))
+                        && (x.Y.IsEqual(y.Y, tolerance));
+        }
+
+
+        public int GetHashCode(Point point)
+        {
+            var hashCode = 33;
+            hashCode = hashCode * -21 + point.X.Truncate().GetHashCode();
+            hashCode = hashCode * -21 + point.Y.Truncate().GetHashCode();
+            return hashCode;
+        }
+    }
+
     //Used to override event comparison when using BMinHeap for Event queue.
     internal class EventQueueComparer : Comparer<Event>
     {
@@ -190,6 +226,9 @@ namespace Advanced.Algorithms.Geometry
     /// </summary>
     public class BentleyOttmann
     {
+        private readonly int precision;
+        private readonly double tolerance;
+
         internal static int intersectionCount;
         internal Line SweepLine;
 
@@ -204,12 +243,17 @@ namespace Advanced.Algorithms.Geometry
         private HashSet<Event> eventQueueLookUp;
         private BMinHeap<Event> eventQueue;
 
+        public BentleyOttmann(int precision = 5)
+        {
+            this.precision = precision;
+            this.tolerance = Math.Round(Math.Pow(0.1, precision), precision);
+        }
         private void initialize(HashSet<Line> lineSegments)
         {
             SweepLine = new Line(new Point(0, 0), new Point(0, int.MaxValue));
 
             currentlyTracked = new RedBlackTree<Event>(true);
-            intersectionEvents = new Dictionary<Point, HashSet<Tuple<Event, Event>>>();
+            intersectionEvents = new Dictionary<Point, HashSet<Tuple<Event, Event>>>(new PointComparer(tolerance));
 
             specialLines = new HashSet<Event>();
             normalLines = new HashSet<Event>();
@@ -227,7 +271,7 @@ namespace Advanced.Algorithms.Geometry
             eventQueueLookUp = new HashSet<Event>(rightLeftEventLookUp.SelectMany(x => new[] {
                                     x.Key,
                                     x.Value
-                                }));
+                                }), new PointComparer(tolerance));
 
             eventQueue = new BMinHeap<Event>(eventQueueLookUp, new EventQueueComparer());
 
