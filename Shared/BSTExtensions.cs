@@ -15,7 +15,7 @@ namespace Advanced.Algorithms.DataStructures
                 {
                     return null;
                 }
-                Geometry.SweepLineIntersection.intersectionCount++;
+                Geometry.BentleyOttmann.intersectionCount++;
                 var compareResult = current.Value.CompareTo(value);
 
                 if (compareResult == 0)

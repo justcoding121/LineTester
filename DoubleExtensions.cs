@@ -25,5 +25,25 @@ namespace Advanced.Algorithms.Geometry
 
             return input;
         }
+
+        internal static bool IsEqual(this double a, double b, int precision)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static bool IsLessThan(this double a, double b, int precision)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static bool IsGreaterThan(this double a, double b, int precision)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static int CompareTo(this double a, double b, int precision)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

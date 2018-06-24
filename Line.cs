@@ -66,39 +66,6 @@ namespace Advanced.Algorithms.Geometry
             return new Line(Left.Clone(), Right.Clone());
         }
 
-        public override bool Equals(object that)
-        {
-            // Check for null values.
-            if (that == null)
-            {
-                return false;
-            }
-
-            if (that == this)
-            {
-                return true;
-            }
-
-            var thatLine = that as Line;
-
-            if (Left.Equals(thatLine.Left)
-                && Right.Equals(thatLine.Right))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-
-        public override int GetHashCode()
-        {
-            var hashCode = 18;
-            hashCode = hashCode * -23 + Left.GetHashCode();
-            hashCode = hashCode * -23 + Right.GetHashCode();
-            return hashCode;
-        }
-
     }
 
 

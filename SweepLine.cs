@@ -23,18 +23,18 @@ namespace Advanced.Algorithms.Geometry
         //The full line only if not an intersection event
         internal Line Segment;
 
-        internal Line SweepLine;
+        internal BentleyOttmann Algorithm;
 
         internal Line LastSweepLine;
         internal Point LastIntersection;
 
         internal Event(Point eventPoint, EventType eventType,
-            Line lineSegment, Line sweepLine)
+            Line lineSegment, BentleyOttmann algorithm)
             : base(eventPoint.X, eventPoint.Y)
         {
             Type = eventType;
             Segment = lineSegment;
-            SweepLine = sweepLine;
+            Algorithm = algorithm;
         }
 
         public int CompareTo(object that)
@@ -57,14 +57,14 @@ namespace Advanced.Algorithms.Geometry
             else
             {
                 if (LastSweepLine != null
-                    && LastSweepLine.Equals(SweepLine))
+                    && LastSweepLine == Algorithm.SweepLine)
                 {
                     intersectionA = LastIntersection;
                 }
                 else
                 {
-                    intersectionA = LineIntersection.FindIntersection(line1, SweepLine);
-                    LastSweepLine = SweepLine.Clone();
+                    intersectionA = LineIntersection.FindIntersection(line1, Algorithm.SweepLine);
+                    LastSweepLine = Algorithm.SweepLine;
                     LastIntersection = intersectionA;
                 }
             }
@@ -78,14 +78,14 @@ namespace Advanced.Algorithms.Geometry
             else
             {
                 if (thatEvent.LastSweepLine != null
-                    && thatEvent.LastSweepLine.Equals(thatEvent.SweepLine))
+                    && thatEvent.LastSweepLine == thatEvent.Algorithm.SweepLine)
                 {
                     intersectionB = thatEvent.LastIntersection;
                 }
                 else
                 {
-                    intersectionB = LineIntersection.FindIntersection(line2, thatEvent.SweepLine);
-                    thatEvent.LastSweepLine = thatEvent.SweepLine.Clone();
+                    intersectionB = LineIntersection.FindIntersection(line2, thatEvent.Algorithm.SweepLine);
+                    thatEvent.LastSweepLine = thatEvent.Algorithm.SweepLine;
                     thatEvent.LastIntersection = intersectionB;
                 }
             }
@@ -188,10 +188,10 @@ namespace Advanced.Algorithms.Geometry
     /// <summary>
     ///     Bentley-Ottmann Algorithm
     /// </summary>
-    public class SweepLineIntersection
+    public class BentleyOttmann
     {
         internal static int intersectionCount;
-        private Line sweepLine;
+        internal Line SweepLine;
 
         private RedBlackTree<Event> currentlyTracked;
         private Dictionary<Point, HashSet<Tuple<Event, Event>>> intersectionEvents;
@@ -206,7 +206,7 @@ namespace Advanced.Algorithms.Geometry
 
         private void initialize(HashSet<Line> lineSegments)
         {
-            sweepLine = new Line(new Point(0, 0), new Point(0, int.MaxValue));
+            SweepLine = new Line(new Point(0, 0), new Point(0, int.MaxValue));
 
             currentlyTracked = new RedBlackTree<Event>(true);
             intersectionEvents = new Dictionary<Point, HashSet<Tuple<Event, Event>>>();
@@ -218,8 +218,8 @@ namespace Advanced.Algorithms.Geometry
                                    .Select(x =>
                                    {
                                        return new KeyValuePair<Event, Event>(
-                                          new Event(x.Left, EventType.Start, x, sweepLine),
-                                          new Event(x.Right, EventType.End, x, sweepLine)
+                                          new Event(x.Left, EventType.Start, x, this),
+                                          new Event(x.Right, EventType.End, x, this)
                                        );
 
                                    }).ToDictionary(x => x.Value, x => x.Key);
@@ -354,9 +354,7 @@ namespace Advanced.Algorithms.Geometry
 
         private void sweepTo(Event currentEvent)
         {
-            sweepLine.Left.X = currentEvent.X;
-            sweepLine.Right.X = currentEvent.X;
-            //sweepLine = new Line(new Point(currentEvent.X, 0), new Point(currentEvent.X, int.MaxValue));
+            SweepLine = new Line(new Point(currentEvent.X, 0), new Point(currentEvent.X, int.MaxValue));
         }
 
         private void enqueueIntersectionEvent(Event currentEvent, Point intersection)
@@ -366,10 +364,10 @@ namespace Advanced.Algorithms.Geometry
                 return;
             }
 
-            var intersectionEvent = new Event(intersection, EventType.Intersection, null, sweepLine);
+            var intersectionEvent = new Event(intersection, EventType.Intersection, null, this);
 
-            if (sweepLine.Left.X.Truncate() < intersectionEvent.X.Truncate()
-                || (sweepLine.Left.X.Truncate() == intersectionEvent.X.Truncate()
+            if (SweepLine.Left.X.Truncate() < intersectionEvent.X.Truncate()
+                || (SweepLine.Left.X.Truncate() == intersectionEvent.X.Truncate()
                    && currentEvent.X.Truncate() < intersectionEvent.Y.Truncate()))
             {
                 if (!eventQueueLookUp.Contains(intersectionEvent))

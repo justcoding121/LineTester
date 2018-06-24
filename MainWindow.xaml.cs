@@ -48,7 +48,7 @@ namespace LineTester
 
         private void generate(bool redo)
         {
-            var sweepLine = new SweepLineIntersection();
+            var sweepLine = new BentleyOttmann();
 
             if (!redo)
             {
@@ -71,6 +71,7 @@ namespace LineTester
 
                     var orgElapsed = watch.ElapsedMilliseconds;
                     watch.Reset();
+                    long actualElapsed;
 
                     var orgCalls = LineIntersection.calls;
                     try
@@ -80,9 +81,9 @@ namespace LineTester
                         var actual = sweepLine.FindIntersections(hashSet);
                         watch.Start();
 
-                        var elaped = watch.ElapsedMilliseconds;
+                        actualElapsed = watch.ElapsedMilliseconds;
                         actualIntersections = actual.Select(x => x.Key).ToList();
-                        var maxHeight = SweepLineIntersection.intersectionCount;
+                        var maxHeight = BentleyOttmann.intersectionCount;
                     }
                     catch
                     {
@@ -90,7 +91,7 @@ namespace LineTester
                     }
                     var calls = LineIntersection.calls - orgCalls;
                     LineIntersection.calls = 0;
-                    SweepLineIntersection.intersectionCount = 0;
+                    BentleyOttmann.intersectionCount = 0;
                 }
             }
             else
