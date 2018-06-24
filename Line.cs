@@ -14,14 +14,17 @@ namespace Advanced.Algorithms.Geometry
 
         public double Slope => slope.Value;
 
-        internal Line(int precision)
+        internal Line(double tolerance)
         {
-            tolerance = Math.Round(Math.Pow(0.1, precision), precision);
+            this.tolerance = tolerance;
             slope = new Lazy<double>(() => calcSlope());
         }
 
+        private Line(int precision = 5)
+            : this(Math.Round(Math.Pow(0.1, precision), precision)) { }
+
         public Line(Point start, Point end, int precision = 5)
-            : this(precision)
+        : this(precision)
         {
             if (start.X < end.X)
             {

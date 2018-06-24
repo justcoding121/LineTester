@@ -1,6 +1,7 @@
 ﻿using Advanced.Algorithms.DataStructures;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Advanced.Algorithms.Geometry
@@ -18,6 +19,8 @@ namespace Advanced.Algorithms.Geometry
     /// </summary>
     internal class Event : Point, IComparable
     {
+        private readonly double tolerance;
+
         internal EventType Type;
 
         //The full line only if not an intersection event
@@ -32,6 +35,7 @@ namespace Advanced.Algorithms.Geometry
             Line lineSegment, BentleyOttmann algorithm)
             : base(eventPoint.X, eventPoint.Y)
         {
+            tolerance = algorithm.Tolerance;
             Type = eventType;
             Segment = lineSegment;
             Algorithm = algorithm;
@@ -90,7 +94,7 @@ namespace Advanced.Algorithms.Geometry
                 }
             }
 
-            var result = intersectionA.Y.Truncate().CompareTo(intersectionB.Y.Truncate());
+            var result = intersectionA.Y.Compare(intersectionB.Y, tolerance);
             if (result != 0)
             {
                 return result;
@@ -102,21 +106,21 @@ namespace Advanced.Algorithms.Geometry
             //if Y is same use slope as comparison
             double slope2 = line2.Slope;
 
-            result = slope1.CompareTo(slope2);
+            result = slope1.Compare(slope2, tolerance);
             if (result != 0)
             {
                 return result;
             }
 
             //if slope is the same use diff of X co-ordinate
-            result = line1.Left.X.Truncate().CompareTo(line2.Left.X.Truncate());
+            result = line1.Left.X.Compare(line2.Left.X, tolerance);
             if (result != 0)
             {
                 return result;
             }
 
             //if diff of X co-ordinate is same use diff of Y co-ordinate
-            result = line1.Left.Y.Truncate().CompareTo(line2.Left.Y.Truncate());
+            result = line1.Left.Y.Compare(line2.Left.Y, tolerance);
 
             //at this point this is guaranteed to be not same.
             //since we don't let duplicate lines with input HashSet of lines.
@@ -183,8 +187,8 @@ namespace Advanced.Algorithms.Geometry
         public int GetHashCode(Point point)
         {
             var hashCode = 33;
-            hashCode = hashCode * -21 + point.X.Truncate().GetHashCode();
-            hashCode = hashCode * -21 + point.Y.Truncate().GetHashCode();
+            hashCode = hashCode * -21 + Math.Truncate(point.X).GetHashCode();
+            hashCode = hashCode * -21 + Math.Truncate(point.Y).GetHashCode();
             return hashCode;
         }
     }
@@ -192,6 +196,13 @@ namespace Advanced.Algorithms.Geometry
     //Used to override event comparison when using BMinHeap for Event queue.
     internal class EventQueueComparer : Comparer<Event>
     {
+        private readonly double tolerance;
+
+        internal EventQueueComparer(double tolerance)
+        {
+            this.tolerance = tolerance;
+        }
+
         public override int Compare(Event a, Event b)
         {
             //same object
@@ -201,7 +212,7 @@ namespace Advanced.Algorithms.Geometry
             }
 
             //compare X
-            var result = a.X.Truncate().CompareTo(b.X.Truncate());
+            var result = a.X.Compare(b.X, tolerance);
 
             if (result != 0)
             {
@@ -209,7 +220,7 @@ namespace Advanced.Algorithms.Geometry
             }
 
             //compare Y
-            result = a.Y.Truncate().CompareTo(b.Y.Truncate());
+            result = a.Y.Compare(b.Y, tolerance);
             if (result != 0)
             {
                 return result;
@@ -227,9 +238,8 @@ namespace Advanced.Algorithms.Geometry
     public class BentleyOttmann
     {
         private readonly int precision;
-        private readonly double tolerance;
+        internal readonly double Tolerance;
 
-        internal static int intersectionCount;
         internal Line SweepLine;
 
         private RedBlackTree<Event> currentlyTracked;
@@ -246,14 +256,17 @@ namespace Advanced.Algorithms.Geometry
         public BentleyOttmann(int precision = 5)
         {
             this.precision = precision;
-            this.tolerance = Math.Round(Math.Pow(0.1, precision), precision);
+            Tolerance = Math.Round(Math.Pow(0.1, precision), precision);
         }
-        private void initialize(HashSet<Line> lineSegments)
+
+        private void initialize(IEnumerable<Line> lineSegments)
         {
             SweepLine = new Line(new Point(0, 0), new Point(0, int.MaxValue));
 
-            currentlyTracked = new RedBlackTree<Event>(true);
-            intersectionEvents = new Dictionary<Point, HashSet<Tuple<Event, Event>>>(new PointComparer(tolerance));
+            var pointComparer = new PointComparer(Tolerance);
+
+            currentlyTracked = new RedBlackTree<Event>(true, pointComparer);
+            intersectionEvents = new Dictionary<Point, HashSet<Tuple<Event, Event>>>(pointComparer);
 
             specialLines = new HashSet<Event>();
             normalLines = new HashSet<Event>();
@@ -271,14 +284,14 @@ namespace Advanced.Algorithms.Geometry
             eventQueueLookUp = new HashSet<Event>(rightLeftEventLookUp.SelectMany(x => new[] {
                                     x.Key,
                                     x.Value
-                                }), new PointComparer(tolerance));
+                                }), new PointComparer(Tolerance));
 
-            eventQueue = new BMinHeap<Event>(eventQueueLookUp, new EventQueueComparer());
+            eventQueue = new BMinHeap<Event>(eventQueueLookUp, new EventQueueComparer(Tolerance));
 
         }
 
-        public Dictionary<Point, List<Line>> FindIntersections(HashSet<Line> lineSegments)
-        {         
+        public Dictionary<Point, List<Line>> FindIntersections(IEnumerable<Line> lineSegments)
+        {
             initialize(lineSegments);
 
             while (eventQueue.Count > 0)
@@ -294,7 +307,6 @@ namespace Advanced.Algorithms.Geometry
                         {
                             foreach (var verticalLine in specialLines)
                             {
-                                intersectionCount++;
                                 var intersection = findIntersection(currentEvent, verticalLine);
                                 recordIntersection(currentEvent, verticalLine, intersection);
                             }
@@ -306,7 +318,6 @@ namespace Advanced.Algorithms.Geometry
 
                             foreach (var verticalLine in normalLines)
                             {
-                                intersectionCount++;
                                 var intersection = findIntersection(currentEvent, verticalLine);
                                 recordIntersection(currentEvent, verticalLine, intersection);
                             }
@@ -321,12 +332,10 @@ namespace Advanced.Algorithms.Geometry
                         var lower = currentlyTracked.Previous(currentEvent);
                         var upper = currentlyTracked.Next(currentEvent);
 
-                        intersectionCount++;
                         var lowerIntersection = findIntersection(currentEvent, lower);
                         recordIntersection(currentEvent, lower, lowerIntersection);
                         enqueueIntersectionEvent(currentEvent, lowerIntersection);
 
-                        intersectionCount++;
                         var upperIntersection = findIntersection(currentEvent, upper);
                         recordIntersection(currentEvent, upper, upperIntersection);
                         enqueueIntersectionEvent(currentEvent, upperIntersection);
@@ -350,7 +359,6 @@ namespace Advanced.Algorithms.Geometry
 
                         currentlyTracked.Delete(currentEvent);
 
-                        intersectionCount++;
                         var upperLowerIntersection = findIntersection(lower, upper);
                         recordIntersection(lower, upper, upperLowerIntersection);
                         enqueueIntersectionEvent(currentEvent, upperLowerIntersection);
@@ -371,7 +379,6 @@ namespace Advanced.Algorithms.Geometry
                             var upperLine = item.Item1;
                             var upperUpper = currentlyTracked.Next(upperLine);
 
-                            intersectionCount++;
                             var newUpperIntersection = findIntersection(upperLine, upperUpper);
                             recordIntersection(upperLine, upperUpper, newUpperIntersection);
                             enqueueIntersectionEvent(currentEvent, newUpperIntersection);
@@ -379,7 +386,6 @@ namespace Advanced.Algorithms.Geometry
                             var lowerLine = item.Item2;
                             var lowerLower = currentlyTracked.Previous(lowerLine);
 
-                            intersectionCount++;
                             var newLowerIntersection = findIntersection(lowerLine, lowerLower);
                             recordIntersection(lowerLine, lowerLower, newLowerIntersection);
                             enqueueIntersectionEvent(currentEvent, newLowerIntersection);
@@ -392,8 +398,7 @@ namespace Advanced.Algorithms.Geometry
 
             return intersectionEvents.ToDictionary(x => x.Key,
                                                    x => x.Value.SelectMany(y => new[] { y.Item1.Segment, y.Item2.Segment })
-                                                        .Distinct()
-                                                        .ToList());
+                                                       .Distinct().ToList());
         }
 
         private void sweepTo(Event currentEvent)
@@ -410,9 +415,9 @@ namespace Advanced.Algorithms.Geometry
 
             var intersectionEvent = new Event(intersection, EventType.Intersection, null, this);
 
-            if (SweepLine.Left.X.Truncate() < intersectionEvent.X.Truncate()
-                || (SweepLine.Left.X.Truncate() == intersectionEvent.X.Truncate()
-                   && currentEvent.X.Truncate() < intersectionEvent.Y.Truncate()))
+            if (SweepLine.Left.X.IsLessThan(intersectionEvent.X, Tolerance)
+                || (SweepLine.Left.X.IsEqual(intersectionEvent.X, Tolerance)
+                   && currentEvent.X.IsLessThan(intersectionEvent.Y, Tolerance)))
             {
                 if (!eventQueueLookUp.Contains(intersectionEvent))
                 {
@@ -443,7 +448,7 @@ namespace Advanced.Algorithms.Geometry
             }
 
             var existing = intersectionEvents.ContainsKey(intersection) ?
-                    intersectionEvents[intersection] : new HashSet<Tuple<Event, Event>>();
+                intersectionEvents[intersection] : new HashSet<Tuple<Event, Event>>();
 
             if (line1.Segment.Slope.CompareTo(line2.Segment.Slope) > 0)
             {

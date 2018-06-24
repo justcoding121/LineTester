@@ -2,13 +2,12 @@
 {
     public class Point
     {
-        private readonly int precision;
-        public Point(double x, double y, int precision = 5)
+        public Point(double x, double y)
         {
             X = x;
             Y = y;
-            this.precision = precision;
         }
+
         public double X { get; private set; }
         public double Y { get; private set; }
 
