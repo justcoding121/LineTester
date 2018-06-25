@@ -5,7 +5,6 @@ namespace Advanced.Algorithms.Geometry
 {
     public class LineIntersection
     {
-        internal static int calls;
 
         /// <summary>
         ///  Returns Point of intersection if do intersect otherwise default Point (null)
@@ -16,13 +15,17 @@ namespace Advanced.Algorithms.Geometry
         /// <returns>The point of intersection.</returns>
         public static Point FindIntersection(Line lineA, Line lineB, int precision = 5)
         {
-            calls++;
+            var tolerance = Math.Round(Math.Pow(0.1, precision), precision);
+            return FindIntersection(lineA, lineB, tolerance);
+        }
+
+        internal static Point FindIntersection(Line lineA, Line lineB, double tolerance)
+        {
             if (lineA == lineB)
             {
                 throw new Exception("Both lines are the same.");
             }
 
-            var tolerance = Math.Round(Math.Pow(0.1, precision), precision);
 
             //make lineA as left
             if (lineA.Left.X.Compare(lineB.Left.X, tolerance) > 0)
@@ -46,7 +49,7 @@ namespace Advanced.Algorithms.Geometry
 
             double x3 = lineB.Left.X, y3 = lineB.Left.Y;
             double x4 = lineB.Right.X, y4 = lineB.Right.Y;
-         
+
 
             //equations of the form x=c (two vertical overlapping lines)
             if (x1.IsEqual(x2, tolerance)
@@ -58,8 +61,8 @@ namespace Advanced.Algorithms.Geometry
 
                 //x,y can intersect outside the line segment since line is infinitely long
                 //so finally check if x, y is within both the line segments
-                if (IsInsideLine(lineA, firstIntersection, precision) &&
-                    IsInsideLine(lineB, firstIntersection, precision))
+                if (IsInsideLine(lineA, firstIntersection, tolerance) &&
+                    IsInsideLine(lineB, firstIntersection, tolerance))
                 {
                     return new Point(x3, y3);
                 }
@@ -76,8 +79,8 @@ namespace Advanced.Algorithms.Geometry
                 //get the first intersection in sorted order
                 //x,y can intersect outside the line segment since line is infinitely long
                 //so finally check if x, y is within both the line segments
-                if (IsInsideLine(lineA, firstIntersection, precision) &&
-                    IsInsideLine(lineB, firstIntersection, precision))
+                if (IsInsideLine(lineA, firstIntersection, tolerance) &&
+                    IsInsideLine(lineB, firstIntersection, tolerance))
                 {
                     return new Point(x3, y3);
                 }
@@ -206,7 +209,7 @@ namespace Advanced.Algorithms.Geometry
 
     }
 
-    public static class LinExtensions
+    public static class LineExtensions
     {
         public static bool Intersects(this Line lineA, Line lineB, int precision = 5)
         {
@@ -216,6 +219,16 @@ namespace Advanced.Algorithms.Geometry
         public static Point Intersection(this Line lineA, Line lineB, int precision = 5)
         {
             return LineIntersection.FindIntersection(lineA, lineB, precision);
+        }
+
+        internal static bool Intersects(this Line lineA, Line lineB, double tolerance)
+        {
+            return LineIntersection.FindIntersection(lineA, lineB, tolerance) != null;
+        }
+
+        internal static Point Intersection(this Line lineA, Line lineB, double tolerance)
+        {
+            return LineIntersection.FindIntersection(lineA, lineB, tolerance);
         }
     }
 }

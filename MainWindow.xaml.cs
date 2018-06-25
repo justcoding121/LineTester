@@ -44,11 +44,16 @@ namespace LineTester
         List<Advanced.Algorithms.Geometry.Point> actualIntersections
             = new List<Advanced.Algorithms.Geometry.Point>();
 
-        private static int nodeCount = 5;
+        private static int nodeCount = 1000;
+
+        private static double tolerance;
 
         private void generate(bool redo)
         {
-            var sweepLine = new BentleyOttmann();
+            var precision = 5;
+            tolerance = Math.Round(Math.Pow(0.1, precision), precision);
+
+            var sweepLine = new BentleyOttmann(precision);
 
             if (!redo)
             {
@@ -60,16 +65,28 @@ namespace LineTester
                 {
                     lines = getRandomLines(nodeCount);
 
+                    if(lines.Any(x=>x.IsHorizontal || x.IsVertical))
+                    {
+                        continue;
+                    }
+
                     var watch = new Stopwatch();
                     watch.Start();
                     expectedIntersections = getExpectedIntersections(lines);
                     watch.Stop();
 
+                    if (expectedIntersections.Any(x => x.Value.Count > 2))
+                    {
+                        expectedIntersections.Clear();
+                        continue;
+                    }
+
+
                     var orgElapsed = watch.ElapsedMilliseconds;
                     watch.Reset();
                     long actualElapsed;
 
-                    var orgCalls = LineIntersection.calls;
+
                     try
                     {
                         watch.Start();
@@ -81,10 +98,9 @@ namespace LineTester
                     }
                     catch
                     {
-                       break;
+                        break;
                     }
-                    var calls = LineIntersection.calls - orgCalls;
-                    LineIntersection.calls = 0;
+
                 }
             }
             else
@@ -92,17 +108,20 @@ namespace LineTester
                 try
                 {
                     expectedIntersections = getExpectedIntersections(lines);
-                  
-                   var ss = new HashSet<Advanced.Algorithms.Geometry.Line>(lines);
+
+                    var ss = new HashSet<Advanced.Algorithms.Geometry.Line>(lines);
                     actualIntersections = sweepLine.FindIntersections(ss)
                         .Select(x => x.Key).ToList();
                 }
-                catch { }
+                catch
+                {
+
+                }
 
             }
 
 
-            display(lines, expectedIntersections.Select(x=>x.Key).ToList(), actualIntersections);
+            display(lines, expectedIntersections.Select(x => x.Key).ToList(), actualIntersections);
 
         }
 
@@ -193,21 +212,20 @@ namespace LineTester
 
         private static Dictionary<Advanced.Algorithms.Geometry.Point, List<Advanced.Algorithms.Geometry.Line>> getExpectedIntersections(List<Advanced.Algorithms.Geometry.Line> lines)
         {
-            var precision = 5;
-            var result = new Dictionary<Advanced.Algorithms.Geometry.Point, HashSet<Advanced.Algorithms.Geometry.Line>>(new PointComparer(Math.Round(Math.Pow(0.1, precision), precision)));
+            var result = new Dictionary<Advanced.Algorithms.Geometry.Point, HashSet<Advanced.Algorithms.Geometry.Line>>(new PointComparer(tolerance));
 
             for (int i = 0; i < lines.Count; i++)
             {
                 for (int j = i + 1; j < lines.Count; j++)
                 {
-                    var intersection = Advanced.Algorithms.Geometry.LineIntersection.FindIntersection(lines[i], lines[j]);
+                    var intersection = Advanced.Algorithms.Geometry.LineIntersection.FindIntersection(lines[i], lines[j], tolerance);
 
-                    if (intersection != null )
+                    if (intersection != null)
                     {
                         var existing = result.ContainsKey(intersection) ?
                                  result[intersection] : new HashSet<Advanced.Algorithms.Geometry.Line>();
 
-                        if(!existing.Contains(lines[i]))
+                        if (!existing.Contains(lines[i]))
                         {
                             existing.Add(lines[i]);
                         }
@@ -222,7 +240,7 @@ namespace LineTester
                 }
             }
 
-            return result.ToDictionary(x=>x.Key, x=>x.Value.ToList());
+            return result.ToDictionary(x => x.Key, x => x.Value.ToList());
         }
 
         private static List<Advanced.Algorithms.Geometry.Line> getRandomLines(int lineCount)
@@ -236,8 +254,8 @@ namespace LineTester
 
             //lines.AddRange(new[] { s1, s2, s3, s4 });
 
-            lines.AddRange(verticalLines());
-            lines.AddRange(horizontalLines());
+           // lines.AddRange(verticalLines());
+            //lines.AddRange(horizontalLines());
 
             while (lineCount > 0)
             {
@@ -252,10 +270,10 @@ namespace LineTester
         {
             var lines = new List<Advanced.Algorithms.Geometry.Line>();
 
-            var s1 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(100, 200), new Advanced.Algorithms.Geometry.Point(100, 600));
-            var s2 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(100, 225), new Advanced.Algorithms.Geometry.Point(100, 625));
-            var s3 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(100, 250), new Advanced.Algorithms.Geometry.Point(100, 475));
-            var s4 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(100, 290), new Advanced.Algorithms.Geometry.Point(100, 675));
+            var s1 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(100, 200), new Advanced.Algorithms.Geometry.Point(100, 600), tolerance);
+            var s2 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(100, 225), new Advanced.Algorithms.Geometry.Point(100, 625), tolerance);
+            var s3 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(100, 250), new Advanced.Algorithms.Geometry.Point(100, 475), tolerance);
+            var s4 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(100, 290), new Advanced.Algorithms.Geometry.Point(100, 675), tolerance);
 
             lines.AddRange(new[] { s1, s2, s3, s4 });
 
@@ -266,10 +284,10 @@ namespace LineTester
         {
             var lines = new List<Advanced.Algorithms.Geometry.Line>();
 
-            var s1 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(200, 100), new Advanced.Algorithms.Geometry.Point(600, 100));
-            var s2 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(225, 100), new Advanced.Algorithms.Geometry.Point(625, 100));
-            var s3 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(250, 100), new Advanced.Algorithms.Geometry.Point(475, 100));
-            var s4 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(290, 100), new Advanced.Algorithms.Geometry.Point(675, 100));
+            var s1 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(200, 100), new Advanced.Algorithms.Geometry.Point(600, 100), tolerance);
+            var s2 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(225, 100), new Advanced.Algorithms.Geometry.Point(625, 100), tolerance);
+            var s3 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(250, 100), new Advanced.Algorithms.Geometry.Point(475, 100), tolerance);
+            var s4 = new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(290, 100), new Advanced.Algorithms.Geometry.Point(675, 100), tolerance);
 
             lines.AddRange(new[] { s1, s2, s3, s4 });
 
@@ -279,7 +297,7 @@ namespace LineTester
         private static Advanced.Algorithms.Geometry.Line getRandomLine()
         {
             return new Advanced.Algorithms.Geometry.Line(new Advanced.Algorithms.Geometry.Point(random.Next(0, 1000) * random.NextDouble(), random.Next(0, 1000) * random.NextDouble()),
-                new Advanced.Algorithms.Geometry.Point(random.Next(0, 1000) * random.NextDouble(), random.Next(0, 1000) * random.NextDouble()));
+                new Advanced.Algorithms.Geometry.Point(random.Next(0, 1000) * random.NextDouble(), random.Next(0, 1000) * random.NextDouble()), tolerance);
         }
 
 
