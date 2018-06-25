@@ -44,7 +44,7 @@ namespace LineTester
         List<Advanced.Algorithms.Geometry.Point> actualIntersections
             = new List<Advanced.Algorithms.Geometry.Point>();
 
-        private static int nodeCount = 10;
+        private static int nodeCount = 100;
 
         private static double tolerance;
 
@@ -153,8 +153,10 @@ namespace LineTester
                 setPoint(canvas, line.Right, true);
             }
 
+            var comparer = new PointComparer(tolerance);
+
             expectedIntersections
-              .RemoveAll(x => actualIntersections.Any(y => y.Equals(x)));
+              .RemoveAll(x => actualIntersections.Any(y => comparer.Equals(x, y)));
 
             foreach (var point in expectedIntersections)
             {

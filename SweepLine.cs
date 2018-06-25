@@ -212,15 +212,8 @@ namespace Advanced.Algorithms.Geometry
             }
 
             //compare X
-            var result = a.X.Compare(b.X, tolerance);
+            var result = a.X.CompareTo(b.X);
 
-            if (result != 0)
-            {
-                return result;
-            }
-
-            //compare Y
-            result = a.Y.Compare(b.Y, tolerance);
             if (result != 0)
             {
                 return result;
@@ -228,7 +221,6 @@ namespace Advanced.Algorithms.Geometry
 
             //Left event first, then intersection and finally right.
             return a.Type.CompareTo(b.Type);
-
         }
     }
 
@@ -413,9 +405,9 @@ namespace Advanced.Algorithms.Geometry
 
             var intersectionEvent = new Event(intersection, EventType.Intersection, null, this);
 
-            if (intersectionEvent.X.IsGreaterThan(SweepLine.Left.X, Tolerance)
-                || (intersectionEvent.X.IsEqual(SweepLine.Left.X, Tolerance)
-                   && intersectionEvent.Y.IsGreaterThan(currentEvent.Y, Tolerance)))
+            if (intersectionEvent.X > SweepLine.Left.X
+                || (intersectionEvent.X == SweepLine.Left.X
+                   && intersectionEvent.Y > currentEvent.Y))
             {
                 if (!eventQueueLookUp.Contains(intersectionEvent))
                 {
