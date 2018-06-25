@@ -44,7 +44,7 @@ namespace LineTester
         List<Advanced.Algorithms.Geometry.Point> actualIntersections
             = new List<Advanced.Algorithms.Geometry.Point>();
 
-        private static int nodeCount = 1000;
+        private static int nodeCount = 10;
 
         private static double tolerance;
 

@@ -413,16 +413,15 @@ namespace Advanced.Algorithms.Geometry
 
             var intersectionEvent = new Event(intersection, EventType.Intersection, null, this);
 
-            if (SweepLine.Left.X.IsLessThan(intersectionEvent.X, Tolerance)
-                || (SweepLine.Left.X.IsEqual(intersectionEvent.X, Tolerance)
-                   && currentEvent.Y.IsLessThan(intersectionEvent.Y, Tolerance)))
+            if (intersectionEvent.X.IsGreaterThan(SweepLine.Left.X, Tolerance)
+                || (intersectionEvent.X.IsEqual(SweepLine.Left.X, Tolerance)
+                   && intersectionEvent.Y.IsGreaterThan(currentEvent.Y, Tolerance)))
             {
                 if (!eventQueueLookUp.Contains(intersectionEvent))
                 {
                     eventQueue.Insert(intersectionEvent);
                     eventQueueLookUp.Add(intersectionEvent);
                 }
-
             }
 
         }
